@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Memory Match</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body data-theme="dark">
+    <header>
+        <!-- Кнопка назад для возврата в меню -->
+        <button class="back-btn" id="back-btn">⬅️</button>
+        <h1 class="title">Memory</h1>
+        <div class="icons">
+            <!-- Исправили ID под CamelCase для JS и заменили флаг на смайлик планеты -->
+            <button class="icon-btn" id="langBtn" aria-label="Сменить язык">🌍</button>
+            <button class="icon-btn" id="themeBtn" aria-label="Сменить тему">🌓</button>
+        </div>
+    </header>
+
+    <main>
+        <!-- Информация сверху -->
+        <div class="info-bar">
+            <div class="score-box">
+                <div id="moves-label" class="label">ХОДЫ</div>
+                <div id="moves" class="value">0</div>
+            </div>
+            <div class="score-box">
+                <div id="pairs-label" class="label">ПАРЫ</div>
+                <div id="pairs" class="value">0 / 8</div>
+            </div>
+        </div>
+
+        <!-- Игровое поле -->
+        <div class="game-container">
+            <div class="board" id="board"></div>
+        </div>
+
+        <button class="reset-btn" id="reset-btn">Новая игра</button>
+    </main>
+
+    <!-- Победа -->
+    <div class="overlay" id="win-overlay">
+        <div class="overlay-content">
+            <h2 id="win-title">Поздравляем!</h2>
+            <p id="win-subtitle">Вы справились за <span id="final-moves">0</span> ходов</p>
+            <button class="btn-primary" id="play-again-btn">Играть снова</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

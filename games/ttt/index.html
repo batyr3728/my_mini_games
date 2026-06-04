@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Tic Tac Toe</title>
+  <link rel="stylesheet" href="style.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<!-- Добавили data-theme и data-color строго для подхвата цветов из меню -->
+<body data-theme="dark" data-color="green" data-lang="ru">
+
+<header class="top-bar">
+  <button class="icon-btn" id="backBtn">⬅️</button>
+  <div class="top-actions">
+    <button class="icon-btn" id="infiniteBtn">🎮</button>
+    <button class="icon-btn" id="infoBtn">ℹ️</button>
+  </div>
+</header>
+
+<main class="wrapper">
+
+  <div class="mode-box">
+    <button class="mode active" id="modeBot">VS BOT</button>
+    <button class="mode" id="modePvp">2 ИГРОКА</button>
+  </div>
+
+  <div class="score-row">
+    <div class="indicator active" id="indX">
+      <div class="avatar" id="avatarX">😺</div>
+      <div class="symbol">X</div>
+    </div>
+
+    <div class="score-box">
+      <span id="scoreX">0</span>
+      <span>-</span>
+      <span id="scoreO">0</span>
+    </div>
+
+    <div class="indicator" id="indO">
+      <div class="avatar" id="avatarO">🤖</div>
+      <div class="symbol">O</div>
+    </div>
+  </div>
+
+  <div class="board" id="board">
+    <div class="cell" data-i="0"></div>
+    <div class="cell" data-i="1"></div>
+    <div class="cell" data-i="2"></div>
+    <div class="cell" data-i="3"></div>
+    <div class="cell" data-i="4"></div>
+    <div class="cell" data-i="5"></div>
+    <div class="cell" data-i="6"></div>
+    <div class="cell" data-i="7"></div>
+    <div class="cell" data-i="8"></div>
+  </div>
+
+  <button class="reset" id="resetBtn">СБРОС</button>
+  <button class="difficulty" id="difficultyBtn">ЛЕГКО</button>
+
+</main>
+
+<!-- Твое оригинальное модальное окно настроек со всеми кнопками -->
+<div id="settingsModal" class="modal">
+  <div class="modal-content">
+    <span class="close" id="closeModal">×</span>
+    <h2 class="modal-title" id="modalTitle">Настройки</h2>
+
+    <div class="settings-buttons">
+      <button class="icon-btn" id="langBtn">🌍</button>
+      <button class="icon-btn" id="themeBtn">🌗</button>
+    </div>
+  </div>
+</div>
+
+<audio id="gameSound" preload="auto"></audio>
+
+<script src="script.js"></script>
+
+</body>
+</html>

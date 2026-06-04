@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Rock Paper Scissors</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body data-theme="light">
+
+<header>
+  <div class="nav">
+    <button id="backBtn">⬅️</button>
+  </div>
+
+  <div class="controls">
+    <button id="langBtn">🌍</button>
+    <button id="themeBtn">🌗</button>
+  </div>
+</header>
+
+<main>
+  <div class="choices">
+    <!-- Заменили обычный камень на сочную каменную статую Моаи -->
+    <button class="choice" data-choice="rock">🗿</button>
+    <button class="choice" data-choice="paper">📄</button>
+    <button class="choice" data-choice="scissors">✂️</button>
+  </div>
+
+  <div class="result" id="result">
+    <p id="hint">Сделай выбор</p>
+  </div>
+
+  <button class="reset-btn" id="resetBtn">Сбросить</button>
+</main>
+
+<script src="script.js"></script>
+</body>
+</html>

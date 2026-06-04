@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Minesweeper</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body data-theme="dark">
+    <header>
+        <!-- Кнопка назад для быстрого возврата в меню -->
+        <button class="back-btn" id="back-btn">⬅️</button>
+        <h1 class="title" id="game-title">Сапёр</h1>
+        <div class="icons">
+            <!-- Исправили ID кнопок под CamelCase для JS и поставили смайлик планеты -->
+            <button class="icon-btn" id="langBtn" aria-label="Сменить язык">🌍</button>
+            <button class="icon-btn" id="themeBtn" aria-label="Сменить тему">🌓</button>
+        </div>
+    </header>
+
+    <main>
+        <div class="info-bar">
+            <div class="score-box">
+                <div id="mines-label" class="label">МИНЫ</div>
+                <div id="mines-left" class="value">10</div>
+            </div>
+            <div class="score-box">
+                <div id="time-label" class="label">ВРЕМЯ</div>
+                <div id="time" class="value">0:00</div>
+            </div>
+        </div>
+
+        <div class="game-container">
+            <div class="board" id="board"></div>
+        </div>
+
+        <button class="reset-btn" id="reset-btn">Новая игра</button>
+    </main>
+
+    <!-- Overlay для Победы / Поражения -->
+    <div class="overlay" id="overlay">
+        <div class="overlay-content">
+            <h2 id="overlay-title"></h2>
+            <p id="overlay-subtitle"></p>
+            <button class="btn-primary" id="play-again-btn">Играть снова</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

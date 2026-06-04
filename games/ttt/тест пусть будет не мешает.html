@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Крестики-нолики • 3 символа</title>
+  <style>
+    :root {
+      --bg: #0f0f1a;
+      --cell: #1a1a2e;
+      --text: #e0e0ff;
+      --x: #ff6b6b;
+      --o: #4ecdc4;
+      --accent: #7f5af0;
+    }
+    body {
+      margin: 0;
+      font-family: system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 16px;
+      box-sizing: border-box;
+    }
+    header {
+      width: 100%;
+      max-width: 360px;
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .icon-btn {
+      width: 44px;
+      height: 44px;
+      border: none;
+      border-radius: 12px;
+      background: var(--cell);
+      color: var(--text);
+      font-size: 20px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .icon-btn:hover { background: var(--accent); transform: scale(1.08); }
+    .board {
+      display: grid;
+      grid-template-columns: repeat(3, 100px);
+      grid-gap: 12px;
+      margin: 20px 0;
+    }
+    .cell {
+      width: 100px;
+      height: 100px;
+      background: var(--cell);
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 48px;
+      font-weight: bold;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.2s;
+    }
+    .cell:hover { background: #2a2a4e; }
+    .cell.X { color: var(--x); }
+    .cell.O { color: var(--o); }
+    .status {
+      font-size: 24px;
+      margin: 16px 0;
+      min-height: 32px;
+    }
+    .score {
+      font-size: 28px;
+      margin: 8px 0;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <button class="icon-btn" id="modeBtn">🎮</button>
+  <div>
+    <button class="icon-btn" id="resetBtn">⟳</button>
+  </div>
+</header>
+
+<div class="score">X: <span id="sx">0</span> – O: <span id="so">0</span></div>
+<div class="status" id="status">Твой ход (X)</div>
+
+<div class="board" id="board">
+  <div class="cell" data-i="0"></div>
+  <div class="cell" data-i="1"></div>
+  <div class="cell" data-i="2"></div>
+  <div class="cell" data-i="3"></div>
+  <div class="cell" data-i="4"></div>
+  <div class="cell" data-i="5"></div>
+  <div class="cell" data-i="6"></div>
+  <div class="cell" data-i="7"></div>
+  <div class="cell" data-i="8"></div>
+</div>
+
+<script>
+// ────────────────────────────────────────────────
+const cells = document.querySelectorAll('.cell');
+const boardEl = document.getElementById('board');
+const statusEl = document.getElementById('status');
+const sx = document.getElementById('sx');
+const so = document.getElementById('so');
+const modeBtn = document.getElementById('modeBtn');
+const resetBtn = document.getElementById('resetBtn');
+
+let board = Array(9).fill(null);
+let current = 'X';
+let gameOver = false;
+let scores = { X: 0, O: 0 };
+let infinite = localStorage.getItem('ttt_infinite') === 'true';
+
+let xOrder = [];
+let oOrder = [];
+
+modeBtn.textContent = infinite ? '🔄' : '🎮';
+
+// ────────────────────────────────────────────────
+function reset() {
+  board.fill(null);
+  cells.forEach(c => {
+    c.textContent = '';
+    c.className = 'cell';
+  });
+  xOrder = [];
+  oOrder = [];
+  current = 'X';
+  gameOver = false;
+  statusEl.textContent = 'Твой ход (X)';
+  updateScore();
+}
+
+function updateScore() {
+  sx.textContent = scores.X;
+  so.textContent = scores.O;
+}
+
+// ────────────────────────────────────────────────
+function checkWin(player) {
+  const wins = [
+    [0,1,2], [3,4,5], [6,7,8],
+    [0,3,6], [1,4,7], [2,5,8],
+    [0,4,8], [2,4,6]
+  ];
+  return wins.some(combo => combo.every(i => board[i] === player));
+}
+
+function isFull() {
+  return board.every(v => v !== null);
+}
+
+// ────────────────────────────────────────────────
+function makeMove(i, player) {
+  if (board[i] !== null || gameOver) return false;
+
+  board[i] = player;
+  cells[i].textContent = player;
+  cells[i].classList.add(player);
+
+  if (player === 'X') xOrder.push(i);
+  else oOrder.push(i);
+
+  // Удаляем старый символ, если > 3 в бесконечном режиме
+  if (infinite) {
+    if (player === 'X' && xOrder.length > 3) {
+      let old = xOrder.shift();
+      board[old] = null;
+      cells[old].textContent = '';
+      cells[old].className = 'cell';
+    }
+    if (player === 'O' && oOrder.length > 3) {
+      let old = oOrder.shift();
+      board[old] = null;
+      cells[old].textContent = '';
+      cells[old].className = 'cell';
+    }
+  }
+
+  if (checkWin(player)) {
+    gameOver = true;
+    statusEl.textContent = `${player} выиграл!`;
+    scores[player]++;
+    updateScore();
+    setTimeout(reset, 1800);
+    return true;
+  }
+
+  if (!infinite && isFull()) {
+    gameOver = true;
+    statusEl.textContent = 'Ничья';
+    setTimeout(reset, 1800);
+    return true;
+  }
+
+  current = player === 'X' ? 'O' : 'X';
+  statusEl.textContent = `Ход ${current}`;
+  return true;
+}
+
+// ──────────────────────────────────────────────── простой бот
+function botMove() {
+  if (gameOver || current !== 'O') return;
+
+  // Пытаемся выиграть
+  for (let combo of [
+    [0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]
+  ]) {
+    let cnt = combo.filter(i => board[i] === 'O').length;
+    let emp = combo.find(i => board[i] === null);
+    if (cnt === 2 && emp !== undefined) {
+      makeMove(emp, 'O');
+      return;
+    }
+  }
+
+  // Блокируем игрока
+  for (let combo of [
+    [0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]
+  ]) {
+    let cnt = combo.filter(i => board[i] === 'X').length;
+    let emp = combo.find(i => board[i] === null);
+    if (cnt === 2 && emp !== undefined) {
+      makeMove(emp, 'O');
+      return;
+    }
+  }
+
+  // Центр → углы → стороны
+  const prefs = [4, 0,2,6,8, 1,3,5,7];
+  for (let i of prefs) {
+    if (board[i] === null) {
+      makeMove(i, 'O');
+      return;
+    }
+  }
+}
+
+// ──────────────────────────────────────────────── клики
+cells.forEach(cell => {
+  cell.onclick = () => {
+    if (gameOver) return;
+    const i = +cell.dataset.i;
+
+    if (makeMove(i, current)) {
+      if (current === 'X') {  // после хода человека
+        setTimeout(() => {
+          if (!gameOver && current === 'O') botMove();
+        }, 400);
+      }
+    }
+  };
+});
+
+// ──────────────────────────────────────────────── кнопки
+modeBtn.onclick = () => {
+  infinite = !infinite;
+  localStorage.setItem('ttt_infinite', infinite);
+  modeBtn.textContent = infinite ? '🔄' : '🎮';
+  reset();
+};
+
+resetBtn.onclick = reset;
+
+// старт
+reset();
+</script>
+</body>
+</html>

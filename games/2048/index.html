@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>2048</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body data-theme="dark">
+    <header>
+        <!-- Кнопка назад с правильным классом для JS -->
+        <button class="back-btn" aria-label="Назад">⬅️</button>
+        <h1 class="title">2048</h1>
+        <div class="icons">
+            <!-- Исправленные ID кнопок под CamelCase для JS и смайлик планеты -->
+            <button class="icon-btn" id="langBtn" aria-label="Сменить язык">🌍</button>
+            <button class="icon-btn" id="themeBtn" aria-label="Сменить тему">🌓</button>
+        </div>
+    </header>
+
+    <main>
+        <div class="score-container">
+            <!-- Текущий счёт -->
+            <div class="score-box">
+                <div id="score-label" class="score-label">Счёт</div>
+                <div id="score-value" class="score-value">0</div>
+            </div>
+            <!-- Рекорд -->
+            <div class="score-box">
+                <div id="best-label" class="score-label">Рекорд</div>
+                <div id="best-value" class="score-value">0</div>
+            </div>
+        </div>
+
+        <div class="board" id="board">
+            <div class="grid" id="grid">
+                <div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div>
+                <div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div>
+                <div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div>
+                <div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div>
+            </div>
+            <div class="tiles" id="tiles"></div>
+        </div>
+
+        <button class="reset-btn" id="reset-btn">Новая игра</button>
+    </main>
+
+    <!-- Win overlay -->
+    <div class="overlay" id="win-overlay">
+        <div class="overlay-content">
+            <h2 id="win-title">Вы достигли 2048!</h2>
+            <p id="win-subtitle">Отлично! Продолжить?</p>
+            <button class="btn-primary" id="continue-btn">Продолжить</button>
+            <button class="btn-primary" id="new-game-win-btn">Новая игра</button>
+        </div>
+    </div>
+
+    <!-- Game Over overlay -->
+    <div class="overlay" id="gameover-overlay">
+        <div class="overlay-content">
+            <h2 id="gameover-title">Игра окончена</h2>
+            <p id="gameover-subtitle">Ходов больше нет 😔</p>
+            <button class="btn-primary" id="try-again-btn">Ещё раз</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

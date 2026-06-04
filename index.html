@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Mini Games</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body data-theme="light">
+
+<header class="header">
+  <div class="logo" id="title">Мини-игры</div>
+
+  <div class="controls">
+    <!-- Выбор акцентного цвета -->
+    <div class="color-picker" id="colorPicker" title="Цветовая тема">
+      <span class="color-dot theme-green" data-color="green"></span>
+      <span class="color-dot theme-blue" data-color="blue"></span>
+      <span class="color-dot theme-purple" data-color="purple"></span>
+      <span class="color-dot theme-orange" data-color="orange"></span>
+    </div>
+    
+    <button id="viewBtn" title="Вид">🔳</button>
+    <button id="langBtn" title="Язык">🌍</button>
+    <button id="themeBtn" title="Тема">🌗</button>
+  </div>
+</header>
+
+<main class="container">
+  <div class="games-grid grid" id="gamesGrid">
+
+    <button class="game-card active" id="g2048Btn">2048</button>
+    <button class="game-card active" id="memoryBtn">Мнемоника</button>
+    <button class="game-card active" id="minesweeperBtn">Сапер</button>
+    <button class="game-card active" id="rpsBtn">Камень<br>Ножницы<br>Бумага</button>
+    <button class="game-card active" id="tttBtn">Крестики<br>Нолики</button>
+    <button class="game-card soon">Скоро</button>
+
+  </div>
+</main>
+
+<script src="script.js"></script>
+</body>
+</html>
