@@ -1,0 +1,198 @@
+:root {
+    --bg-page:    #f8f9fa;
+    --bg-header:  #e9ecef;
+    --bg-card:    #ffffff;
+    --text:       #212529;
+    --accent:     #4caf50;
+    --accent-dark:#388e3c;
+    --gray:       #6c757d;
+    --light-gray: #dee2e6;
+    --dark-gray:  #343a40;
+    --shadow:     0 4px 12px rgba(0,0,0,0.15);
+    
+    --cell-initial: #555555;
+    --cell-selected: rgba(76, 175, 80, 0.18);
+    --cell-highlight: rgba(0, 0, 0, 0.04);
+    --cell-error: #ffcdd2;
+    --cell-error-text: #c62828;
+}
+
+[data-theme="dark"] {
+    --bg-page:    #121212;
+    --bg-header:  #1a1a1a;
+    --bg-card:    #1e1e1e;
+    --text:       #e0e0e0;
+    --accent:     #66bb6a;
+    --accent-dark:#4CAF50;
+    --gray:       #adb5bd;
+    --light-gray: #495057;
+    --dark-gray:  #212529;
+    --shadow:     0 4px 12px rgba(0,0,0,0.4);
+    
+    --cell-initial: #bbbbbb;
+    --cell-selected: rgba(102, 187, 106, 0.22);
+    --cell-highlight: rgba(255, 255, 255, 0.04);
+    --cell-error: #5c2525;
+    --cell-error-text: #ef5350;
+}
+
+body[data-color="green"]  { --accent: #4caf50; --accent-dark: #388e3c; }
+body[data-color="blue"]   { --accent: #2196f3; --accent-dark: #1976d2; --cell-selected: rgba(33, 150, 243, 0.18); }
+body[data-color="purple"] { --accent: #9c27b0; --accent-dark: #7b1fa2; --cell-selected: rgba(156, 39, 176, 0.18); }
+body[data-color="orange"] { --accent: #ff9800; --accent-dark: #f57c00; --cell-selected: rgba(255, 152, 0, 0.18); }
+
+[data-theme="dark"][data-color="green"]  { --accent: #66bb6a; --accent-dark: #4CAF50; }
+[data-theme="dark"][data-color="blue"]   { --accent: #64b5f6; --accent-dark: #2196f3; --cell-selected: rgba(100, 181, 246, 0.22); }
+[data-theme="dark"][data-color="purple"] { --accent: #ba68c8; --accent-dark: #9c27b0; --cell-selected: rgba(186, 104, 248, 0.22); }
+[data-theme="dark"][data-color="orange"] { --accent: #ffb74d; --accent-dark: #ff9800; --cell-selected: rgba(255, 183, 77, 0.22); }
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0; padding: 0;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg-page); color: var(--text);
+    min-height: 100dvh; display: flex; flex-direction: column;
+    overflow: hidden; transition: background 0.3s, color 0.3s;
+}
+
+header {
+    position: sticky; top: 0; background: var(--bg-header);
+    padding: 12px 16px; display: flex; align-items: center;
+    justify-content: space-between; box-shadow: var(--shadow);
+    z-index: 100; flex-shrink: 0;
+}
+
+.diff-tab {
+    background: transparent; border: none; color: var(--gray); padding: 6px 12px;
+    font-size: 0.9rem; font-weight: 600; cursor: pointer; border-radius: 6px; transition: all 0.2s;
+}
+
+.diff-tab.active {
+    background: var(--accent); color: #fff; box-shadow: var(--shadow);
+}
+
+.title { font-size: 2rem; font-weight: 800; letter-spacing: -1px; margin: 0; }
+.icons { display: flex; gap: 12px; }
+
+.icon-btn {
+    width: 44px; height: 44px; border-radius: 50%;
+    background: var(--bg-card); border: none; font-size: 22px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text); opacity: 0.8; box-shadow: var(--shadow); cursor: pointer;
+}
+.icon-btn:active { transform: scale(0.95); }
+
+main {
+    flex: 1; max-width: 480px; width: 100%; margin: 0 auto;
+    padding: 12px 16px 16px; display: flex; flex-direction: column; gap: 12px; overflow: hidden;
+}
+
+.info-bar { width: 100%; display: flex; gap: 12px; justify-content: center; }
+.score-box { background: var(--bg-card); border-radius: 12px; padding: 10px 16px; box-shadow: var(--shadow); text-align: center; flex: 1; }
+.label { font-size: 0.82rem; font-weight: 600; color: var(--gray); text-transform: uppercase; letter-spacing: 0.5px; }
+.value { font-size: 2.3rem; font-weight: 800; color: var(--accent); line-height: 1; margin-top: 2px; }
+
+.game-container { flex: 1; display: flex; align-items: center; justify-content: center; min-height: 0; }
+
+/* ИГРОВОЕ ПОЛЕ */
+.sudoku-board {
+    display: grid; 
+    grid-template-columns: repeat(9, 1fr); 
+    grid-template-rows: repeat(9, 1fr);
+    width: 100%; max-width: 400px; aspect-ratio: 1 / 1; padding: 2px;
+    background: var(--bg-card); 
+    border: 3px solid var(--accent); /* Внешняя рамка теперь тоже цвета меню */
+    border-radius: 14px; 
+    box-shadow: var(--shadow); 
+    overflow: hidden;
+}
+
+/* КЛЕТКА И МАЛЕНЬКИЕ ГРАНИЦЫ (МЕНЯЮТСЯ ОТ ТЕМЫ) */
+.cell {
+    background: var(--bg-card); display: flex; align-items: center; justify-content: center;
+    font-size: 1.45rem; font-weight: 700; color: var(--accent); cursor: pointer; user-select: none;
+    /* Маленькие границы через внутреннюю тень — адаптивны к теме (--light-gray) */
+    box-shadow: inset 0 0 0 1px var(--light-gray); 
+    transition: background-color 0.15s, color 0.15s, opacity 0.2s, filter 0.2s;
+}
+.cell.initial { color: var(--cell-initial); font-weight: 500; }
+
+/* БОЛЬШИЕ ГРАНИЦЫ 3Х3 — ПОДТЯГИВАЮТ АКТУАЛЬНЫЙ ЦВЕТ МЕНЮ (--accent) */
+/* Вертикальные жирные линии для 3-го и 6-го столбцов */
+.cell:nth-child(9n+3),
+.cell:nth-child(9n+6) { 
+    box-shadow: inset -3px 0 0 0 var(--accent), inset 0 0 0 1px var(--light-gray); 
+}
+
+/* Горизонтальные жирные линии для 3-го и 6-го блоков */
+body .sudoku-board .cell:nth-child(n+19):nth-child(-n+27),
+body .sudoku-board .cell:nth-child(n+46):nth-child(-n+54) { 
+    border-bottom: 3px solid var(--accent); 
+}
+
+/* Комбинированное пересечение (где жирная вертикальная линия встречается с жирной горизонтальной) */
+body .sudoku-board .cell:nth-child(21), body .sudoku-board .cell:nth-child(24),
+body .sudoku-board .cell:nth-child(48), body .sudoku-board .cell:nth-child(51) {
+    box-shadow: inset -3px 0 0 0 var(--accent), inset 0 0 0 1px var(--light-gray);
+    border-bottom: 3px solid var(--accent);
+}
+
+/* СТИЛИ СОСТОЯНИЙ ЯЧЕЕК */
+.cell.highlighted { background-color: var(--cell-highlight); }
+.cell.selected { background-color: var(--cell-selected) !important; box-shadow: inset 0 0 0 2px var(--accent) !important; z-index: 5; }
+.cell.error { background-color: var(--cell-error) !important; color: var(--cell-error-text) !important; }
+
+.num-pad { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; width: 100%; max-width: 400px; margin: 0 auto; }
+.num-btn { background: var(--bg-card); color: var(--text); border: none; border-radius: 10px; padding: 12px 0; font-size: 1.4rem; font-weight: 700; cursor: pointer; box-shadow: var(--shadow); }
+.num-btn:active { transform: scale(0.92); }
+.num-btn.erase-btn { background: var(--light-gray); font-size: 1.1rem;}
+
+.reset-btn { width: 100%; max-width: 400px; margin: 0 auto; padding: 14px; font-size: 1.2rem; font-weight: 700; background: var(--accent); color: #fff; border: none; border-radius: 12px; box-shadow: var(--shadow); cursor: pointer; text-align: center; }
+.reset-btn:active { transform: scale(0.98); }
+
+.overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.85); display: none; align-items: center; justify-content: center; z-index: 1000; }
+.overlay-content { background: var(--bg-card); border-radius: 20px; padding: 32px 24px; width: 90%; max-width: 340px; text-align: center; }
+.overlay h2 { font-size: 2.1rem; margin: 0 0 12px; font-weight: 800; }
+.overlay p { font-size: 1.1rem; color: var(--gray); margin-bottom: 20px; }
+.btn-primary { background: var(--accent); color: #fff; width: 100%; padding: 15px; border: none; border-radius: 12px; font-size: 1.25rem; font-weight: 700; cursor: pointer; }
+.btn-primary:active { transform: scale(0.98); }
+
+@media (max-width: 480px) { .value { font-size: 2rem; } .cell { font-size: 1.2rem; } .num-btn { padding: 10px 0; font-size: 1.2rem; } }
+
+/* Кнопка «Назад» в левом верхнем углу */
+.back-btn {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: var(--bg-card);
+    color: var(--text);
+    text-decoration: none;
+    font-size: 20px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--shadow);
+    transition: transform 0.15s;
+    cursor: pointer;
+}
+.back-btn:active {
+    transform: scale(0.92);
+}
+
+/* Растягиваем блок сложностей во всю ширину между полем и клавишами */
+.diff-selector.row-layout {
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 2px;
+    background: var(--bg-page);
+    border-radius: 8px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+}
+.diff-selector.row-layout .diff-tab {
+    padding: 10px 0;
+    text-align: center;
+}

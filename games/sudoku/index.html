@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Судоку</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body data-color="green">
+    <header>
+        <!-- Кнопка назад со смайликом слева сверху -->
+        <a href="../../index.html" class="back-btn">⬅️</a>
+        <div class="icons">
+            <button class="icon-btn" id="theme-toggle">🌓</button>
+        </div>
+    </header>
+
+    <main>
+        <div class="info-bar">
+            <!-- Счетчик ошибок -->
+            <div class="score-box">
+                <div class="label">Ошибки</div>
+                <div class="value" id="error-value">0/10</div>
+            </div>
+            <!-- Секундомер -->
+            <div class="score-box">
+                <div class="label">Время</div>
+                <div class="value" id="timer-value">00:00</div>
+            </div>
+        </div>
+
+        <div class="game-container">
+            <div class="sudoku-board" id="board"></div>
+        </div>
+
+        <!-- Переключатель сложности теперь здесь (между полем и клавиатурой) -->
+        <div class="diff-selector row-layout">
+            <button class="diff-tab active" data-diff="easy">Легко</button>
+            <button class="diff-tab" data-diff="medium">Средне</button>
+            <button class="diff-tab" data-diff="hard">Сложно</button>
+        </div>
+
+        <div class="num-pad">
+            <button class="num-btn" data-val="1">1</button>
+            <button class="num-btn" data-val="2">2</button>
+            <button class="num-btn" data-val="3">3</button>
+            <button class="num-btn" data-val="4">4</button>
+            <button class="num-btn" data-val="5">5</button>
+            <button class="num-btn" data-val="6">6</button>
+            <button class="num-btn" data-val="7">7</button>
+            <button class="num-btn" data-val="8">8</button>
+            <button class="num-btn" data-val="9">9</button>
+            <button class="num-btn erase-btn">❌</button>
+        </div>
+
+        <button class="reset-btn" id="reset-btn">Новая игра</button>
+    </main>
+
+    <div class="overlay" id="overlay">
+        <div class="overlay-content">
+            <h2 id="overlay-title">Победа!</h2>
+            <p id="overlay-description">Вы успешно решили это судоку!</p>
+            <button class="btn-primary" id="action-btn">Отлично</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
