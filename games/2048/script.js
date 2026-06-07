@@ -202,8 +202,16 @@ function loadMenuSettings() {
 document.addEventListener('DOMContentLoaded', () => {
     loadMenuSettings();
 
-    const savedBest = localStorage.getItem('2048_best'); if (savedBest) bestScore = parseInt(savedBest, 10); updateBestDisplay();
-    if (!loadGame()) { resetGame(); } else { updateScore(); renderBoard(); }
+    const savedBest = localStorage.getItem('2048_best'); 
+    if (savedBest) bestScore = parseInt(savedBest, 10); 
+    updateBestDisplay();
+    
+    if (!loadGame()) { 
+        resetGame(); 
+    } else { 
+        updateScore(); 
+        renderBoard(); 
+    }
 
     const tBtn = document.getElementById("themeBtn");
     if (tBtn) {
@@ -237,38 +245,51 @@ document.addEventListener('DOMContentLoaded', () => {
         if (e.key === 'ArrowDown'  || e.key.toLowerCase() === 's' || e.key.toLowerCase() === 'ы') moveDown();
     });
 
-    // ====================== УПРАВЛЕНИЕ СВАЙПАМИ (МОБИЛКИ) ======================
-    const touchZone = document.getElementById('tiles') || document.body;
-    let touchStartX = 0; let touchStartY = 0;
-    let touchEndX = 0;   let touchEndY = 0;
+    // ====================== СУПЕР-ПРОСТОЙ ГЛОБАЛЬНЫЙ БЛОК СВАЙПОВ ======================
+    let startX = 0;
+    let startY = 0;
 
-    touchZone.addEventListener('touchstart', (e) => {
-        touchStartX = e.changedTouches.screenX;
-        touchStartY = e.changedTouches.screenY;
+    // Слушаем абсолютно весь экран смартфона напрямую
+    window.addEventListener('touchstart', (e) => {
+        // Если нажали на кнопку сброса или назад, свайп не зачиткиваем
+        if (e.target.closest('button') || e.target.closest('a')) return;
+        
+        startX = e.touches[0].clientX;
+        startY = e.touches[0].clientY;
     }, { passive: true });
 
-    touchZone.addEventListener('touchmove', (e) => {
-        if (!isGameOverFlag) { e.preventDefault(); }
+    window.addEventListener('touchmove', (e) => {
+        // Намертво блокируем скролл страницы пальцем во время игры, чтобы экран не прыгал
+        if (!isGameOverFlag && startX !== 0) {
+            e.preventDefault();
+        }
     }, { passive: false });
 
-    touchZone.addEventListener('touchend', (e) => {
-        if (isGameOverFlag) return;
+    window.addEventListener('touchend', (e) => {
+        if (isGameOverFlag || startX === 0 || startY === 0) return;
 
-        touchEndX = e.changedTouches.screenX;
-        touchEndY = e.changedTouches.screenY;
+        const endX = e.changedTouches[0].clientX;
+        const endY = e.changedTouches[0].clientY;
 
-        const diffX = touchEndX - touchStartX;
-        const diffY = touchEndY - touchStartY;
-        const minSwipeDistance = 40; 
+        const diffX = endX - startX;
+        const diffY = endY - startY;
+        const threshold = 30; // Расстояние свайпа в пикселях
 
+        // Вычисляем, куда полетел палец
         if (Math.abs(diffX) > Math.abs(diffY)) {
-            if (Math.abs(diffX) > minSwipeDistance) {
+            // Листание влево/вправо
+            if (Math.abs(diffX) > threshold) {
                 if (diffX > 0) moveRight(); else moveLeft();
             }
         } else {
-            if (Math.abs(diffY) > minSwipeDistance) {
+            // Листание вверх/вниз
+            if (Math.abs(diffY) > threshold) {
                 if (diffY > 0) moveDown(); else moveUp();
             }
         }
+
+        // Обнуляем координаты
+        startX = 0;
+        startY = 0;
     }, { passive: true });
 });
