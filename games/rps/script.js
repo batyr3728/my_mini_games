@@ -7,15 +7,20 @@ const resetBtn = document.getElementById("resetBtn");
 const result = document.getElementById("result");
 const choices = document.querySelectorAll(".choice");
 
-// 🛠 ПОЧИНИЛИ ТУТ: Вытаскиваем все настройки из памяти главного меню
+// Вытаскиваем настройки из памяти главного меню
 let theme = localStorage.getItem("theme") || "light";
 let lang = localStorage.getItem("lang") || "ru";
 let accentColor = localStorage.getItem("accentColor") || "green";
 
-// Применяем стартовые цвета и темы при первом запуске файла
+// Переменные для хранения текущего состояния раунда (чтобы переводить на лету)
+let lastPlayerChoice = null;
+let lastCpuChoice = null;
+let lastOutcome = null;
+
+// Применяем стартовые цвета и темы
 body.setAttribute("data-theme", theme);
-body.setAttribute("data-color", accentColor); // ← Вот эта строчка чинит цвета!
-themeBtn.textContent = theme === "light" ? "🌗" : "🌓";
+body.setAttribute("data-color", accentColor);
+if (themeBtn) themeBtn.textContent = theme === "light" ? "🌗" : "🌓";
 
 const text = {
   ru: {
@@ -38,6 +43,7 @@ const text = {
   }
 };
 
+// Запуск начальной локализации
 applyLang();
 
 /* EVENTS */
@@ -47,24 +53,29 @@ choices.forEach(btn => {
   });
 });
 
-resetBtn.onclick = resetGame;
+if (resetBtn) resetBtn.onclick = resetGame;
 
-backBtn.onclick = () => {
-  window.location.href = "../../index.html";
-};
+if (backBtn) {
+  backBtn.onclick = () => {
+    window.location.href = "../../index.html";
+  };
+}
 
-themeBtn.onclick = () => {
-  theme = theme === "light" ? "dark" : "light";
-  body.setAttribute("data-theme", theme);
-  themeBtn.textContent = theme === "light" ? "🌗" : "🌓";
-  localStorage.setItem("theme", theme);
-};
+if (themeBtn) {
+  themeBtn.onclick = () => {
+    theme = theme === "light" ? "dark" : "light";
+    body.setAttribute("data-theme", theme);
+    themeBtn.textContent = theme === "light" ? "🌗" : "🌓";
+    localStorage.setItem("theme", theme);
+  };
+}
 
-langBtn.onclick = () => {
-  lang = lang === "ru" ? "en" : "ru";
-  applyLang();
-  if (document.getElementById("hint")) resetGame();
-};
+if (langBtn) {
+  langBtn.onclick = () => {
+    lang = lang === "ru" ? "en" : "ru";
+    applyLang();
+  };
+}
 
 /* LOGIC */
 function play(player) {
@@ -79,28 +90,45 @@ function play(player) {
   ) outcome = "win";
   else if (player !== cpu) outcome = "lose";
 
-  result.innerHTML = `
-    <p>${text[lang].you}: ${icon(player)}</p>
-    <p>${text[lang].cpu}: ${icon(cpu)}</p>
-    <p><strong>${text[lang][outcome]}</strong></p>
-  `;
+  // Сохраняем выбор в глобальные переменные для перевода
+  lastPlayerChoice = player;
+  lastCpuChoice = cpu;
+  lastOutcome = outcome;
+
+  renderResult();
+}
+
+// Вынесли отрисовку в отдельную функцию, чтобы вызывать её и при клике, и при смене языка
+function renderResult() {
+  if (!result) return;
+  
+  if (lastPlayerChoice && lastCpuChoice && lastOutcome) {
+    result.innerHTML = `
+      <p>${text[lang].you}: ${icon(lastPlayerChoice)}</p>
+      <p>${text[lang].cpu}: ${icon(lastCpuChoice)}</p>
+      <p><strong>${text[lang][lastOutcome]}</strong></p>
+    `;
+  } else {
+    result.innerHTML = `<p id="hint">${text[lang].hint}</p>`;
+  }
 }
 
 function resetGame() {
-  result.innerHTML = `<p id="hint">${text[lang].hint}</p>`;
+  lastPlayerChoice = null;
+  lastCpuChoice = null;
+  lastOutcome = null;
+  renderResult();
 }
 
 function applyLang() {
-  const hintEl = document.getElementById("hint");
-  if (hintEl) {
-    hintEl.textContent = text[lang].hint;
-  }
-  resetBtn.textContent = text[lang].reset;
+  // Обновляем текст кнопки сброса
+  if (resetBtn) resetBtn.textContent = text[lang].reset;
   
   // Вращение планеты: на русском 🌍, на английском 🌎
-  if (langBtn) {
-    langBtn.textContent = lang === "ru" ? "🌍" : "🌎";
-  }
+  if (langBtn) langBtn.textContent = lang === "ru" ? "🌍" : "🌎";
+  
+  // Перерисовываем экран (он либо обновит язык подсказки, либо переведет текущий бой)
+  renderResult();
   
   localStorage.setItem("lang", lang);
 }
