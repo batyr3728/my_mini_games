@@ -7,7 +7,6 @@ let isGameOverFlag = false;
 let newTilePosition = null;
 let mergedPositions = new Set();
 
-// Переменные настроек (будут обновляться на лету)
 let theme = "light";
 let accentColor = "green";
 let currentLang = "ru";
@@ -60,6 +59,7 @@ function updateScore() { document.getElementById('score-value').textContent = sc
 // ====================== КООРДИНАТЫ И ГЕНЕРАЦИЯ ПЛИТОК ======================
 function getTileCoords(row, col) {
     const container = document.getElementById('tiles');
+    if (!container) return { left: 0, top: 0, size: 40 };
     const rect = container.getBoundingClientRect();
     const width = rect.width;
     const GAP = 12;
@@ -84,6 +84,7 @@ function createTileElement(value, row, col) {
 // ====================== ОТРИСОВКА И ЛОГИКА ИГРЫ ======================
 function renderBoard() {
     const tilesContainer = document.getElementById('tiles');
+    if (!tilesContainer) return;
     tilesContainer.innerHTML = '';
     for (let r = 0; r < 4; r++) {
         for (let c = 0; c < 4; c++) {
@@ -144,39 +145,38 @@ function checkGameState() {
     for (let r = 0; r < 3; r++) for (let c = 0; c < 4; c++) if (grid[r][c] === grid[r+1][c]) canMove = true;
     if (!canMove) { isGameOverFlag = true; saveBestScore(); localStorage.removeItem('2048_game'); showGameOverOverlay(); }
 }
-function showWinOverlay() { document.getElementById('win-overlay').style.display = 'flex'; }
-function showGameOverOverlay() { document.getElementById('gameover-overlay').style.display = 'flex'; }
-function hideOverlays() { document.getElementById('win-overlay').style.display = 'none'; document.getElementById('gameover-overlay').style.display = 'none'; }
+function showWinOverlay() { const el = document.getElementById('win-overlay'); if(el) el.style.display = 'flex'; }
+function showGameOverOverlay() { const el = document.getElementById('gameover-overlay'); if(el) el.style.display = 'flex'; }
+function hideOverlays() { 
+    const elWin = document.getElementById('win-overlay'); if(elWin) elWin.style.display = 'none'; 
+    const elLose = document.getElementById('gameover-overlay'); if(elLose) elLose.style.display = 'none'; 
+}
 
 function resetGame() {
     grid = Array.from({ length: 4 }, () => Array(4).fill(0)); score = 0; hasWon = false; isGameOverFlag = false; newTilePosition = null; mergedPositions.clear();
     hideOverlays(); localStorage.removeItem('2048_game'); updateScore(); updateBestDisplay(); addRandomTile(); addRandomTile(); saveGame(); renderBoard();
 }
 
-// ====================== ФУНКЦИИ ДВУСТРОННЕЙ СИНХРОНИЗАЦИИ НАСТРОЕК ======================
 function applyTheme() {
-    document.body.setAttribute("data-theme", theme);
+    if (document.body) document.body.setAttribute("data-theme", theme);
     localStorage.setItem("theme", theme);
     const btn = document.getElementById("themeBtn");
     if (btn) btn.textContent = theme === "light" ? "🌗" : "🌓";
 }
 
 function applyAccentColor() {
-    document.body.setAttribute("data-color", accentColor);
+    if (document.body) document.body.setAttribute("data-color", accentColor);
     localStorage.setItem("accentColor", accentColor);
 }
 
 function applyLang() {
     localStorage.setItem("lang", currentLang);
     const t = translations[currentLang];
+    if (!t) return;
     
-    // Вращение планеты: на русском 🌍, на английском 🌎
     const lBtnEl = document.getElementById("langBtn");
-    if (lBtnEl) {
-        lBtnEl.textContent = currentLang === "ru" ? "🌍" : "🌎";
-    }
+    if (lBtnEl) lBtnEl.textContent = currentLang === "ru" ? "🌍" : "🌎";
 
-    // Тексты в самой игре
     const scoreLabel = document.querySelector('.score-box:nth-child(1) .score-label');
     const bestLabel  = document.querySelector('.score-box:nth-child(2) .score-label');
     const resetBtn   = document.querySelector('.reset-btn');
@@ -184,7 +184,6 @@ function applyLang() {
     if (bestLabel) bestLabel.textContent = t.bestLabel; 
     if (resetBtn) resetBtn.textContent = t.resetBtn;
 
-    // Тексты в оверлеях
     const winTitle = document.querySelector('#win-overlay h2'); const winSub = document.querySelector('#win-overlay p'); const winBtn = document.querySelector('#win-overlay .btn-primary');
     if (winTitle && winSub && winBtn) { winTitle.textContent = t.winTitle; winSub.textContent = t.winSubtitle; winBtn.textContent = t.continueBtn; }
 
@@ -196,10 +195,7 @@ function loadMenuSettings() {
     theme = localStorage.getItem("theme") || "light";
     accentColor = localStorage.getItem("accentColor") || "green";
     currentLang = localStorage.getItem("lang") || "ru";
-
-    applyTheme();
-    applyAccentColor();
-    applyLang();
+    applyTheme(); applyAccentColor(); applyLang();
 }
 
 // ====================== ИНИЦИАЛИЗАЦИЯ ПРИ ЗАПУСКЕ ======================
@@ -225,13 +221,14 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    document.querySelector('.reset-btn').addEventListener('click', resetGame);
-    document.querySelector('#gameover-overlay .btn-primary').addEventListener('click', resetGame);
-    document.querySelector('#win-overlay .btn-primary').addEventListener('click', hideOverlays);
+    const rBtn = document.querySelector('.reset-btn'); if(rBtn) rBtn.addEventListener('click', resetGame);
+    const goBtn = document.querySelector('#gameover-overlay .btn-primary'); if(goBtn) goBtn.addEventListener('click', resetGame);
+    const wBtn = document.querySelector('#win-overlay .btn-primary'); if(wBtn) wBtn.addEventListener('click', hideOverlays);
     
     const backBtn = document.querySelector('.back-btn');
     if (backBtn) { backBtn.addEventListener('click', () => { window.location.href = '../../index.html'; }); }
 
+    // УПРАВЛЕНИЕ С КЛАВИАТУРЫ (ПК)
     window.addEventListener('keydown', (e) => {
         if (isGameOverFlag) return;
         if (e.key === 'ArrowLeft'  || e.key.toLowerCase() === 'a' || e.key.toLowerCase() === 'ф') moveLeft();
@@ -239,4 +236,39 @@ document.addEventListener('DOMContentLoaded', () => {
         if (e.key === 'ArrowUp'    || e.key.toLowerCase() === 'w' || e.key.toLowerCase() === 'ц') moveUp();
         if (e.key === 'ArrowDown'  || e.key.toLowerCase() === 's' || e.key.toLowerCase() === 'ы') moveDown();
     });
+
+    // ====================== УПРАВЛЕНИЕ СВАЙПАМИ (МОБИЛКИ) ======================
+    const touchZone = document.getElementById('tiles') || document.body;
+    let touchStartX = 0; let touchStartY = 0;
+    let touchEndX = 0;   let touchEndY = 0;
+
+    touchZone.addEventListener('touchstart', (e) => {
+        touchStartX = e.changedTouches.screenX;
+        touchStartY = e.changedTouches.screenY;
+    }, { passive: true });
+
+    touchZone.addEventListener('touchmove', (e) => {
+        if (!isGameOverFlag) { e.preventDefault(); }
+    }, { passive: false });
+
+    touchZone.addEventListener('touchend', (e) => {
+        if (isGameOverFlag) return;
+
+        touchEndX = e.changedTouches.screenX;
+        touchEndY = e.changedTouches.screenY;
+
+        const diffX = touchEndX - touchStartX;
+        const diffY = touchEndY - touchStartY;
+        const minSwipeDistance = 40; 
+
+        if (Math.abs(diffX) > Math.abs(diffY)) {
+            if (Math.abs(diffX) > minSwipeDistance) {
+                if (diffX > 0) moveRight(); else moveLeft();
+            }
+        } else {
+            if (Math.abs(diffY) > minSwipeDistance) {
+                if (diffY > 0) moveDown(); else moveUp();
+            }
+        }
+    }, { passive: true });
 });

@@ -6,7 +6,6 @@
   --shadow:     0 10px 24px rgba(0,0,0,0.06);
   --shadow-hov: 0 14px 32px rgba(0,0,0,0.12);
   
-  /* Цветовые схемы по умолчанию (Зеленый) */
   --accent:       #4caf50;
   --accent-hover: #439a46;
 }
@@ -23,7 +22,7 @@
   --accent-hover: #81c784;
 }
 
-/* Наборы цветов для кастомизации */
+/* Схемы кастомизации цветов */
 body[data-color="green"]  { --accent: #4caf50; --accent-hover: #439a46; }
 body[data-color="blue"]   { --accent: #2196f3; --accent-hover: #1e88e5; }
 body[data-color="purple"] { --accent: #9c27b0; --accent-hover: #8e24aa; }
@@ -48,7 +47,7 @@ body {
 .header {
   position: sticky;
   top: 0;
-  z-index: 10;
+  z-index: 100;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -58,7 +57,26 @@ body {
 }
 
 .logo { font-size: 20px; font-weight: 700; }
-.controls { display: flex; align-items: center; }
+.controls-wrapper { position: relative; }
+
+/* Меню управления по умолчанию (как у вас и было на десктопе) */
+.controls-menu {
+  display: flex;
+  align-items: center;
+}
+
+/* Кнопка с тремя точками (по умолчанию скрыта на ПК) */
+.burger-toggle {
+  display: none;
+  font-size: 28px;
+  background: transparent;
+  border: none;
+  color: var(--text);
+  cursor: pointer;
+  padding: 0 10px;
+  line-height: 1;
+  user-select: none;
+}
 
 /* Кастомизатор цветов */
 .color-picker {
@@ -87,7 +105,7 @@ body {
 .theme-purple { background: #9c27b0; }
 .theme-orange { background: #ff9800; }
 
-.controls button {
+.controls-menu button {
   width: 42px;
   height: 42px;
   margin-left: 10px;
@@ -99,23 +117,19 @@ body {
   cursor: pointer;
   transition: transform 0.15s, background-color 0.2s;
 }
-.controls button:hover { transform: translateY(-2px); background: var(--accent-hover); }
-.controls button:active { transform: scale(0.95); }
+.controls-menu button:hover { transform: translateY(-2px); background: var(--accent-hover); }
+.controls-menu button:active { transform: scale(0.95); }
 
-/* MAIN CONTAINER (Расширен для FullHD/4K) */
+/* MAIN CONTAINER */
 .container {
   max-width: 1400px;
   margin: 0 auto;
   padding: 40px 30px;
 }
 
-/* СЕТКА С АВТОЗАПОЛНЕНИЕМ ПОД БОЛЬШИЕ МОНИТОРЫ */
+/* СЕТКА ИГР */
 .games-grid { display: grid; gap: 25px; transition: 0.3s; }
-
-.games-grid.grid {
-  /* Карточки будут адаптироваться от 220px до бесконечности (3, 4, 5+ в ряд) */
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-}
+.games-grid.grid { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
 .games-grid.list { grid-template-columns: 1fr; }
 
 /* GAME CARD */
@@ -136,10 +150,8 @@ body {
 
 .game-card:hover { transform: translateY(-5px); box-shadow: var(--shadow-hov); }
 .game-card:active { transform: scale(0.97); }
-
 .game-card.active { border: 1px solid rgba(0, 0, 0, 0.04); }
 [data-theme="dark"] .game-card.active { border: 1px solid rgba(255, 255, 255, 0.04); }
-
 .game-card.active:hover { background: var(--accent); color: #fff; }
 
 .game-card.soon {
@@ -150,3 +162,53 @@ body {
   box-shadow: none;
 }
 .game-card.soon:hover { transform: none; }
+
+/* ================= МОБИЛЬНЫЕ УСТРОЙСТВА ================= */
+@media (max-width: 768px) {
+  .burger-toggle {
+    display: block; /* Показываем три точки */
+  }
+
+  /* Превращаем панель управления в скрытый выпадающий бургер-блок */
+  .controls-menu {
+    display: none; /* Скрыто по умолчанию */
+    position: absolute;
+    top: 50px;
+    right: 0;
+    background: var(--bg-card);
+    padding: 15px;
+    border-radius: 15px;
+    box-shadow: var(--shadow-hov);
+    flex-direction: column;
+    gap: 15px;
+    min-width: 180px;
+    z-index: 110;
+    border: 1px solid rgba(0,0,0,0.05);
+  }
+
+  [data-theme="dark"] .controls-menu {
+    border: 1px solid rgba(255,255,255,0.05);
+  }
+
+  /* Класс для открытия меню через JS */
+  .controls-menu.open {
+    display: flex;
+  }
+
+  .color-picker {
+    margin-right: 0;
+    justify-content: center;
+    width: 100%;
+  }
+
+  .controls-menu button {
+    margin-left: 0;
+    width: 100%; /* Кнопки настроек внутри меню растягиваются во всю ширину */
+  }
+
+  .container { padding: 20px 15px; }
+  .games-grid { gap: 15px; }
+  .games-grid.grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+  .game-card { font-size: 14px; border-radius: 15px; }
+  .games-grid.list .game-card { padding-left: 20px; height: 70px; }
+}

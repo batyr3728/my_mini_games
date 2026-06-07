@@ -1,161 +1,171 @@
-const body = document.body;
-const themeBtn = document.getElementById("themeBtn");
-const langBtn = document.getElementById("langBtn");
-const viewBtn = document.getElementById("viewBtn");
-const title = document.getElementById("title");
+document.addEventListener('DOMContentLoaded', () => {
+  const body = document.body;
+  const themeBtn = document.getElementById("themeBtn");
+  const langBtn = document.getElementById("langBtn");
+  const viewBtn = document.getElementById("viewBtn");
+  const title = document.getElementById("title");
 
-const gamesGrid = document.getElementById("gamesGrid");
-const colorPicker = document.getElementById("colorPicker");
+  const gamesGrid = document.getElementById("gamesGrid");
+  const colorPicker = document.getElementById("colorPicker");
+  
+  // Элементы бургера
+  const burgerToggle = document.getElementById("burgerToggle");
+  const controlsMenu = document.getElementById("controlsMenu");
 
-// Список всех карточек игр для сортировки
-const g2048Btn = document.getElementById("g2048Btn");
-const memoryBtn = document.getElementById("memoryBtn");
-const minesweeperBtn = document.getElementById("minesweeperBtn");
-const rpsBtn = document.getElementById("rpsBtn");
-const tttBtn = document.getElementById("tttBtn");
-const soonBtns = document.querySelectorAll(".soon");
+  // Список всех карточек игр для сортировки
+  const g2048Btn = document.getElementById("g2048Btn");
+  const memoryBtn = document.getElementById("memoryBtn");
+  const minesweeperBtn = document.getElementById("minesweeperBtn");
+  const rpsBtn = document.getElementById("rpsBtn");
+  const tttBtn = document.getElementById("tttBtn");
+  const soonBtns = document.querySelectorAll(".soon");
 
-// Чтение базовых настроек
-let theme = localStorage.getItem("theme") || "light";
-let lang = localStorage.getItem("lang") || "ru";
-let view = localStorage.getItem("view") || "grid";
-let accentColor = localStorage.getItem("accentColor") || "green";
+  // Чтение базовых настроек
+  let theme = localStorage.getItem("theme") || "light";
+  let lang = localStorage.getItem("lang") || "ru";
+  let view = localStorage.getItem("view") || "grid";
+  let accentColor = localStorage.getItem("accentColor") || "green";
 
-// Объект для хранения времени захода в игры
-let gameVisits = JSON.parse(localStorage.getItem("gameVisVisits")) || {
-  g2048Btn: 0,
-  memoryBtn: 0,
-  minesweeperBtn: 0,
-  rpsBtn: 0,
-  tttBtn: 0
-};
+  let gameVisVisits = JSON.parse(localStorage.getItem("gameVisVisits")) || {
+    g2048Btn: 0,
+    memoryBtn: 0,
+    minesweeperBtn: 0,
+    rpsBtn: 0,
+    tttBtn: 0
+  };
 
-// Объект со строгими именами игр для алфавитной сортировки
-const gameNames = {
-  g2048Btn: "2048",
-  memoryBtn: "На память",
-  minesweeperBtn: "Сапер",
-  rpsBtn: "Камень Ножницы Бумага",
-  tttBtn: "Крестики Нолики"
-};
+  const gameNames = {
+    g2048Btn: "2048",
+    memoryBtn: "На память",
+    minesweeperBtn: "Сапер",
+    rpsBtn: "Камень Ножницы Бумага",
+    tttBtn: "Крестики Нолики"
+  };
 
-/* СОРТИРОВКА ИГР (Время захода + Алфавит) */
-function sortGames() {
-  if (!gamesGrid) return;
+  /* ЛОГИКА БУРГЕРА (Три точки) */
+  if (burgerToggle && controlsMenu) {
+    burgerToggle.addEventListener("click", (e) => {
+      e.stopPropagation();
+      controlsMenu.classList.toggle("open");
+    });
 
-  // Собираем все карточки игр в массив
-  const cards = [g2048Btn, memoryBtn, minesweeperBtn, rpsBtn, tttBtn].filter(Boolean);
+    // Закрываем меню при клике в любое другое место экрана
+    document.addEventListener("click", (e) => {
+      if (!controlsMenu.contains(e.target) && e.target !== burgerToggle) {
+        controlsMenu.classList.remove("open");
+      }
+    });
+  }
 
-  cards.sort((a, b) => {
-    const timeA = gameVisits[a.id] || 0;
-    const timeB = gameVisits[b.id] || 0;
+  /* СОРТИРОВКА ИГР */
+  function sortGames() {
+    if (!gamesGrid) return;
+    const cards = [g2048Btn, memoryBtn, minesweeperBtn, rpsBtn, tttBtn].filter(Boolean);
 
-    // 1. Сортировка по времени захода (свежие — первыми)
-    if (timeA !== timeB) {
-      return timeB - timeA;
+    cards.sort((a, b) => {
+      const timeA = gameVisVisits[a.id] || 0;
+      const timeB = gameVisVisits[b.id] || 0;
+      if (timeA !== timeB) return timeB - timeA;
+
+      const nameA = gameNames[a.id] || "";
+      const nameB = gameNames[b.id] || "";
+      return nameA.localeCompare(nameB, lang === "ru" ? "ru" : "en");
+    });
+
+    cards.forEach(card => gamesGrid.appendChild(card));
+    if (soonBtns) {
+      soonBtns.forEach(btn => gamesGrid.appendChild(btn));
     }
+  }
 
-    // 2. Если не заходили, сортируем по алфавиту названия
-    const nameA = gameNames[a.id] || "";
-    const nameB = gameNames[b.id] || "";
-    return nameA.localeCompare(nameB, lang === "ru" ? "ru" : "en");
-  });
+  function handleGameClick(gameId, folder) {
+    gameVisVisits[gameId] = Date.now();
+    localStorage.setItem("gameVisVisits", JSON.stringify(gameVisVisits));
+    window.location.href = `games/${folder}/index.html`;
+  }
 
-  // Перестраиваем элементы в HTML в новом порядке
-  cards.forEach(card => gamesGrid.appendChild(card));
+  function applyTheme() {
+    if (!body || !themeBtn) return;
+    body.setAttribute("data-theme", theme);
+    themeBtn.textContent = theme === "light" ? "🌗" : "🌓";
+    localStorage.setItem("theme", theme);
+  }
 
-  // Заглушки "Скоро" кидаем в самый конец
-  soonBtns.forEach(btn => gamesGrid.appendChild(btn));
-}
+  function applyAccentColor() {
+    if (!body) return;
+    body.setAttribute("data-color", accentColor);
+    localStorage.setItem("accentColor", accentColor);
+    
+    document.querySelectorAll(".color-dot").forEach(dot => {
+      dot.classList.toggle("active", dot.getAttribute("data-color") === accentColor);
+    });
+  }
 
-/* ФУНКЦИЯ ФИКСАЦИИ ВРЕМЕНИ ЗАХОДА */
-function handleGameClick(gameId, folder) {
-  gameVisits[gameId] = Date.now();
-  localStorage.setItem("gameVisVisits", JSON.stringify(gameVisits));
-  window.location.href = `games/${folder}/index.html`;
-}
+  function applyLang() {
+    const isRu = lang === "ru";
+    if (title) title.textContent = isRu ? "Мини-игры" : "Mini Games";
+    if (langBtn) langBtn.textContent = isRu ? "🌍" : "🌎";
+    
+    if (g2048Btn) g2048Btn.innerHTML = "2048";
+    if (memoryBtn) memoryBtn.innerHTML = isRu ? "На память" : "Memory";
+    if (minesweeperBtn) minesweeperBtn.innerHTML = isRu ? "Сапер" : "Minesweeper";
+    if (rpsBtn) rpsBtn.innerHTML = isRu ? "Камень<br>Ножницы<br>Бумага" : "Rock<br>Paper<br>Scissors";
+    if (tttBtn) tttBtn.innerHTML = isRu ? "Крестики<br>Нолики" : "Tic<br>Tac<br>Toe";
+    
+    if (soonBtns) {
+      soonBtns.forEach(b => { b.textContent = isRu ? "Скоро" : "Soon"; });
+    }
+    localStorage.setItem("lang", lang);
+  }
 
-/* THEME */
-function applyTheme() {
-  body.setAttribute("data-theme", theme);
-  themeBtn.textContent = theme === "light" ? "🌗" : "🌓";
-  localStorage.setItem("theme", theme);
-}
+  function applyView() {
+    if (!gamesGrid || !viewBtn) return;
+    gamesGrid.classList.remove("grid", "list");
+    gamesGrid.classList.add(view);
+    viewBtn.textContent = view === "grid" ? "🔳" : "📄";
+    localStorage.setItem("view", view);
+  }
 
-/* CUSTOM ACCENT COLOR */
-function applyAccentColor() {
-  body.setAttribute("data-color", accentColor);
-  localStorage.setItem("accentColor", accentColor);
-  
-  document.querySelectorAll(".color-dot").forEach(dot => {
-    dot.classList.toggle("active", dot.getAttribute("data-color") === accentColor);
-  });
-}
+  if (g2048Btn) g2048Btn.addEventListener("click", () => handleGameClick("g2048Btn", "2048"));
+  if (memoryBtn) memoryBtn.addEventListener("click", () => handleGameClick("memoryBtn", "memory"));
+  if (minesweeperBtn) minesweeperBtn.addEventListener("click", () => handleGameClick("minesweeperBtn", "minesweeper"));
+  if (rpsBtn) rpsBtn.addEventListener("click", () => handleGameClick("rpsBtn", "rps"));
+  if (tttBtn) tttBtn.addEventListener("click", () => handleGameClick("tttBtn", "ttt"));
 
-/* LANGUAGE (Исправлено под твою чистую структуру HTML) */
-function applyLang() {
-  const isRu = lang === "ru";
-  title.textContent = isRu ? "Мини-игры" : "Mini Games";
-  if (langBtn) langBtn.textContent = isRu ? "🌍" : "🌎"; // Вращаем планету в меню
-  
-  // Меняем текст напрямую внутри кнопок-карточек
-  if (g2048Btn) g2048Btn.innerHTML = "2048";
-  if (memoryBtn) memoryBtn.innerHTML = isRu ? "На память" : "Memory";
-  if (minesweeperBtn) minesweeperBtn.innerHTML = isRu ? "Сапер" : "Minesweeper";
-  if (rpsBtn) rpsBtn.innerHTML = isRu ? "Камень<br>Ножницы<br>Бумага" : "Rock<br>Paper<br>Scissors";
-  if (tttBtn) tttBtn.innerHTML = isRu ? "Крестики<br>Нолики" : "Tic<br>Tac<br>Toe";
-  
-  soonBtns.forEach(b => {
-    b.textContent = isRu ? "Скоро" : "Soon";
-  });
-  
-  localStorage.setItem("lang", lang);
-}
+  if (themeBtn) {
+    themeBtn.addEventListener("click", () => {
+      theme = theme === "light" ? "dark" : "light";
+      applyTheme();
+    });
+  }
 
-/* VIEW MODE */
-function applyView() {
-  gamesGrid.classList.remove("grid", "list");
-  gamesGrid.classList.add(view);
-  viewBtn.textContent = view === "grid" ? "🔳" : "📄";
-  localStorage.setItem("view", view);
-}
+  if (langBtn) {
+    langBtn.addEventListener("click", () => {
+      lang = lang === "ru" ? "en" : "ru";
+      applyLang();
+      sortGames();
+    });
+  }
 
-/* НАВИГАЦИЯ С ФИКСАЦИЕЙ КЛИКА */
-if (g2048Btn) g2048Btn.addEventListener("click", () => handleGameClick("g2048Btn", "2048"));
-if (memoryBtn) memoryBtn.addEventListener("click", () => handleGameClick("memoryBtn", "memory"));
-if (minesweeperBtn) minesweeperBtn.addEventListener("click", () => handleGameClick("minesweeperBtn", "minesweeper"));
-if (rpsBtn) rpsBtn.addEventListener("click", () => handleGameClick("rpsBtn", "rps"));
-if (tttBtn) tttBtn.addEventListener("click", () => handleGameClick("tttBtn", "ttt"));
+  if (viewBtn) {
+    viewBtn.addEventListener("click", () => {
+      view = view === "grid" ? "list" : "grid";
+      applyView();
+    });
+  }
 
-/* EVENTS */
-themeBtn.addEventListener("click", () => {
-  theme = theme === "light" ? "dark" : "light";
+  if (colorPicker) {
+    colorPicker.addEventListener("click", (e) => {
+      if (e.target.classList.contains("color-dot")) {
+        accentColor = e.target.getAttribute("data-color");
+        applyAccentColor();
+      }
+    });
+  }
+
   applyTheme();
-});
-
-langBtn.addEventListener("click", () => {
-  lang = lang === "ru" ? "en" : "ru";
+  applyAccentColor();
   applyLang();
-  sortGames(); // Пересортируем, если язык изменился, а заходов не было
-});
-
-viewBtn.addEventListener("click", () => {
-  view = view === "grid" ? "list" : "grid";
   applyView();
+  sortGames();
 });
-
-if (colorPicker) {
-  colorPicker.addEventListener("click", (e) => {
-    if (e.target.classList.contains("color-dot")) {
-      accentColor = e.target.getAttribute("data-color");
-      applyAccentColor();
-    }
-  });
-}
-
-/* INIT */
-applyTheme();
-applyAccentColor();
-applyLang();
-applyView();
-sortGames(); // Запуск сортировки при старте меню
