@@ -6,6 +6,10 @@ let matchedPairs = 0;
 let moves = 0;
 let isGameOver = false;
 
+// Переменные для отслеживания секретной комбинации
+let cheatClickCount = 0;
+let lastClickedCardIndex = null;
+
 // Переменные настроек (будут синхронизироваться на лету)
 let theme = "light";
 let accentColor = "green";
@@ -19,6 +23,7 @@ const translations = {
         resetBtn: "Новая игра",
         winTitle: "Поздравляем!",
         winSubtitle: "Вы справились за",
+        movesCountText: "ходов",
         playAgain: "Играть снова"
     },
     en: {
@@ -27,6 +32,7 @@ const translations = {
         resetBtn: "New Game",
         winTitle: "Congratulations!",
         winSubtitle: "You did it in",
+        movesCountText: "moves",
         playAgain: "Play Again"
     }
 };
@@ -34,9 +40,13 @@ const translations = {
 // ====================== МЕХАНИКА СОЗДАНИЯ ИГРЫ ======================
 function createCards() {
     cards = [];
+    flippedCards = [];
+    cheatClickCount = 0; // Сбрасываем чит-код при новой игре
+    lastClickedCardIndex = null;
+    
     const allCards = [...emojis, ...emojis];
     
-    // Перемешивание (Твоя оригинальная логика)
+    // Перемешивание
     for (let i = allCards.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [allCards[i], allCards[j]] = [allCards[j], allCards[i]];
@@ -49,6 +59,7 @@ function createCards() {
         const card = document.createElement('div');
         card.className = 'card';
         card.dataset.value = emoji;
+        card.dataset.index = index; // Запоминаем индекс карты для чит-кода
 
         card.innerHTML = `
             <div class="card-inner">
@@ -57,10 +68,71 @@ function createCards() {
             </div>
         `;
 
-        card.addEventListener('click', () => flipCard(card));
+        // Оптимизировано под тач-скрины
+        card.addEventListener('click', (e) => {
+            e.preventDefault();
+            
+            // Запускаем проверку чит-кода при каждом нажатии
+            checkCheatCode(index);
+            
+            flipCard(card);
+        });
+        
         if (board) board.appendChild(card);
         cards.push(card);
     });
+}
+
+// ====================== СЕКРЕТНЫЙ ЧИТ-КОД (ЛАЗЕЙКА) ======================
+function checkCheatCode(currentIndex) {
+    if (isGameOver) return;
+
+    // Шаг 1: Ждем 3 нажатия на самую первую ячейку (индекс 0)
+    if (currentIndex === 0) {
+        if (lastClickedCardIndex === 0 || lastClickedCardIndex === null) {
+            cheatClickCount++;
+        } else {
+            cheatClickCount = 1;
+        }
+        lastClickedCardIndex = 0;
+    } 
+    // Шаг 2: Ждем 2 нажатия на вторую ячейку (индекс 1) строго после первой
+    else if (currentIndex === 1 && cheatClickCount >= 3 && (lastClickedCardIndex === 0 || lastClickedCardIndex === 1)) {
+        cheatClickCount++;
+        lastClickedCardIndex = 1;
+        
+        // Если комбинация сошлась (3 раза на 1-ю + 2 раза на 2-ю)
+        if (cheatClickCount === 5) {
+            activateXRayCheat();
+            cheatClickCount = 0;
+            lastClickedCardIndex = null;
+        }
+    } 
+    // Если кликнули на любую другую карту — ломаем комбинацию
+    else {
+        cheatClickCount = 0;
+        lastClickedCardIndex = null;
+    }
+}
+
+function activateXRayCheat() {
+    console.log('%c⚡ Чит-код активирован!', 'color:#ff9800; font-weight:bold;');
+    
+    // Временно открываем все неугаданные карты
+    cards.forEach(card => {
+        if (!card.classList.contains('matched')) {
+            card.classList.add('flipped');
+        }
+    });
+
+    // Через 2.5 секунды прячем их обратно
+    setTimeout(() => {
+        cards.forEach(card => {
+            if (!card.classList.contains('matched') && !flippedCards.includes(card)) {
+                card.classList.remove('flipped');
+            }
+        });
+    }, 2500);
 }
 
 // ====================== МЕХАНИКА ПЕРЕВОРОТА КАРТ ======================
@@ -95,12 +167,12 @@ function flipCard(card) {
                 c1.classList.remove('flipped');
                 c2.classList.remove('flipped');
                 flippedCards = [];
-            }, 900);
+            }, 800);
         }
     }
 }
 
-// ====================== ЗАВЕРШЕНИЕ И СБРОС СЕССИЙ ======================
+// ====================== ЗАВЕРШЕНИЕ И СБРОС ИГРЫ ======================
 function endGame() {
     isGameOver = true;
     const finalMovesEl = document.getElementById('final-moves');
@@ -128,29 +200,25 @@ function newGame() {
 
 // ====================== ФУНКЦИИ ДВУСТРОННЕЙ СИНХРОНИЗАЦИИ НАСТРОЕК ======================
 function applyTheme() {
-    document.body.setAttribute("data-theme", theme);
+    if (document.body) document.body.setAttribute("data-theme", theme);
     localStorage.setItem("theme", theme);
     const btn = document.getElementById("themeBtn");
     if (btn) btn.textContent = theme === "light" ? "🌗" : "🌓";
 }
 
-// Починили: Применяем цвет кастомизации из меню хаба на тег body игры
 function applyAccentColor() {
-    document.body.setAttribute("data-color", accentColor);
+    if (document.body) document.body.setAttribute("data-color", accentColor);
     localStorage.setItem("accentColor", accentColor);
 }
 
 function applyLanguage() {
     localStorage.setItem("lang", currentLang);
     const t = translations[currentLang];
+    if (!t) return;
     
-    // Вращение планеты: на русском 🌍, на английском 🌎
     const lBtn = document.getElementById("langBtn");
-    if (lBtn) {
-        lBtn.textContent = currentLang === "ru" ? "🌍" : "🌎";
-    }
+    if (lBtn) lBtn.textContent = currentLang === "ru" ? "🌍" : "🌎";
 
-    // Переводы текстов на экране
     const movesLabel = document.getElementById('moves-label');
     const pairsLabel = document.getElementById('pairs-label');
     const resetBtn   = document.getElementById('reset-btn');
@@ -162,10 +230,9 @@ function applyLanguage() {
     if (pairsLabel) pairsLabel.textContent = t.pairsLabel;
     if (resetBtn)   resetBtn.textContent = t.resetBtn;
     
-    // Перевод оверлея победы
     if (winTitle) winTitle.textContent = t.winTitle;
     if (winSub) {
-        winSub.innerHTML = `${t.winSubtitle} <span id="final-moves">${moves}</span> ${currentLang === 'ru' ? 'ходов' : 'moves'}`;
+        winSub.innerHTML = `${t.winSubtitle} <span id="final-moves">${moves}</span> ${t.movesCountText}`;
     }
     if (playAgain) playAgain.textContent = t.playAgain;
 }
@@ -182,9 +249,8 @@ function loadMenuSettings() {
 
 // ====================== СЛУШАТЕЛИ И СТАРТ ПРИ ЗАГРУЗКЕ ======================
 function init() {
-    loadMenuSettings(); // Вытягиваем и настраиваем всё из главного меню
+    loadMenuSettings();
 
-    // Клики по кнопкам управления настройками
     const tBtn = document.getElementById("themeBtn");
     if (tBtn) {
         tBtn.addEventListener("click", () => {
@@ -201,19 +267,16 @@ function init() {
         });
     }
 
-    // Игровые кнопки возврата и перезапуска
     const backBtn = document.getElementById('back-btn');
     if (backBtn) backBtn.addEventListener('click', () => window.location.href = '../../index.html');
     
-    const resetBtn = document.getElementById('reset-btn');
-    if (resetBtn) resetBtn.addEventListener('click', newGame);
+    const rBtn = document.getElementById('reset-btn');
+    if (rBtn) rBtn.addEventListener('click', newGame);
     
     const playAgainBtn = document.getElementById('play-again-btn');
     if (playAgainBtn) playAgainBtn.addEventListener('click', newGame);
 
     newGame();
-
-    console.log('%cMemory Match синхронизирована ✓ Механика не затронута', 'color:#4caf50; font-weight:700');
 }
 
-window.onload = init;
+document.addEventListener('DOMContentLoaded', init);
