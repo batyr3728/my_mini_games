@@ -1,4 +1,3 @@
-/* ===== КОРНЕВЫЕ ПЕРЕМЕННЫЕ ===== */
 :root {
     --bg-page:    #f8f9fa;
     --bg-header:  #e9ecef;
@@ -6,12 +5,10 @@
     --text:       #212529;
     --shadow:     0 10px 24px rgba(0,0,0,0.06);
     --shadow-hov: 0 14px 32px rgba(0,0,0,0.12);
-    
     --accent:       #4caf50;
     --accent-hover: #439a46;
 }
 
-/* ===== ТЁМНАЯ ТЕМА ===== */
 [data-theme="dark"] {
     --bg-page:    #121212;
     --bg-header:  #1a1a1a;
@@ -19,12 +16,10 @@
     --text:       #e0e0e0;
     --shadow:     0 10px 24px rgba(0,0,0,0.3);
     --shadow-hov: 0 14px 32px rgba(0,0,0,0.4);
-    
     --accent:       #66bb6a;
     --accent-hover: #81c784;
 }
 
-/* ===== ЦВЕТОВЫЕ СХЕМЫ ===== */
 body[data-color="green"]  { --accent: #4caf50; --accent-hover: #439a46; }
 body[data-color="blue"]   { --accent: #2196f3; --accent-hover: #1e88e5; }
 body[data-color="purple"] { --accent: #9c27b0; --accent-hover: #8e24aa; }
@@ -35,7 +30,6 @@ body[data-color="orange"] { --accent: #ff9800; --accent-hover: #fb8c00; }
 [data-theme="dark"][data-color="purple"] { --accent: #ba68c8; --accent-hover: #ce93d8; }
 [data-theme="dark"][data-color="orange"] { --accent: #ffb74d; --accent-hover: #ffe082; }
 
-/* ===== ОБЩИЕ СТИЛИ ===== */
 * { box-sizing: border-box; }
 
 html, body {
@@ -54,7 +48,6 @@ body {
     flex-direction: column;
 }
 
-/* ===== ХЕДЕР ===== */
 .header {
     flex-shrink: 0;
     display: flex;
@@ -81,7 +74,6 @@ body {
     position: relative;
 }
 
-/* ===== МЕНЮ УПРАВЛЕНИЯ ===== */
 .controls-menu {
     display: flex;
     align-items: center;
@@ -99,7 +91,6 @@ body {
     user-select: none;
 }
 
-/* ===== ВЫБОР ЦВЕТА ===== */
 .color-picker {
     display: flex;
     gap: 6px;
@@ -137,7 +128,6 @@ body {
 .theme-purple { background: #9c27b0; }
 .theme-orange { background: #ff9800; }
 
-/* ===== КНОПКИ МЕНЮ ===== */
 .controls-menu button {
     width: 36px;
     height: 36px;
@@ -160,7 +150,6 @@ body {
     transform: scale(0.95);
 }
 
-/* ===== КОНТЕЙНЕР ===== */
 .container {
     flex: 1;
     display: flex;
@@ -178,7 +167,36 @@ body {
     gap: 10px;
 }
 
-/* ===== ШАХМАТНАЯ ДОСКА ===== */
+.mode-switcher {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.mode-btn {
+    padding: 8px 20px;
+    border: 2px solid var(--accent);
+    background: transparent;
+    color: var(--accent);
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-family: inherit;
+}
+
+.mode-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.mode-btn.active {
+    background: var(--accent);
+    color: #fff;
+}
+
 .chess-board {
     display: grid;
     grid-template-columns: repeat(8, 1fr);
@@ -226,19 +244,16 @@ body {
     transform: scale(0.95);
 }
 
-/* Белые фигуры */
 .cell.white-piece {
     color: #ffffff;
     text-shadow: 0 0 8px rgba(0,0,0,0.5);
 }
 
-/* Чёрные фигуры */
 .cell.black-piece {
     color: #1a1a1a;
     text-shadow: 0 0 8px rgba(255,255,255,0.3);
 }
 
-/* ===== ТЁМНАЯ ТЕМА ДЛЯ ДОСКИ ===== */
 [data-theme="dark"] .cell {
     background: #779952;
     color: #e8e8e8;
@@ -266,7 +281,6 @@ body {
     background: #3a7a3a !important;
 }
 
-/* ===== ИНФОРМАЦИЯ ОБ ИГРЕ ===== */
 .game-info {
     display: flex;
     justify-content: space-between;
@@ -318,31 +332,25 @@ body {
     transform: scale(0.95);
 }
 
-/* ===== АДАПТИВ ===== */
 @media (max-width: 768px) {
     .header {
         padding: 8px 12px;
         min-height: 50px;
     }
-
     .logo {
         font-size: 16px;
     }
-
     .container {
         padding: 8px;
     }
-
     .game-container {
         max-width: 100%;
         gap: 8px;
     }
-
     .burger-toggle {
         display: block;
         font-size: 22px;
     }
-
     .controls-menu {
         display: none;
         position: absolute;
@@ -358,50 +366,44 @@ body {
         z-index: 110;
         border: 1px solid rgba(0,0,0,0.05);
     }
-
     [data-theme="dark"] .controls-menu {
         border: 1px solid rgba(255,255,255,0.05);
     }
-
     .controls-menu.open {
         display: flex;
     }
-
     .color-picker {
         margin-right: 0;
         justify-content: center;
         width: 100%;
     }
-
     .controls-menu button {
         margin-left: 0;
         width: 100%;
     }
-
     .cell {
         font-size: 28px;
     }
-
     .game-info {
         flex-wrap: wrap;
         gap: 6px;
         justify-content: center;
         padding: 8px 12px;
     }
-
     .turn-indicator {
         font-size: 14px;
     }
-
     .turn-indicator .piece {
         font-size: 20px;
     }
-
     .game-status {
         font-size: 12px;
     }
-
     .btn-reset {
+        font-size: 12px;
+        padding: 6px 14px;
+    }
+    .mode-btn {
         font-size: 12px;
         padding: 6px 14px;
     }
@@ -411,20 +413,20 @@ body {
     .cell {
         font-size: 20px;
     }
-
     .game-info {
         padding: 6px 10px;
     }
-
     .turn-indicator {
         font-size: 12px;
     }
-
     .turn-indicator .piece {
         font-size: 16px;
     }
-
     .btn-reset {
+        font-size: 11px;
+        padding: 5px 12px;
+    }
+    .mode-btn {
         font-size: 11px;
         padding: 5px 12px;
     }
@@ -434,31 +436,29 @@ body {
     .cell {
         font-size: 28px;
     }
-
     .header {
         padding: 6px 16px;
         min-height: 44px;
     }
-
     .logo {
         font-size: 15px;
     }
-
     .container {
         padding: 6px;
     }
-
     .game-container {
         gap: 6px;
     }
-
     .game-info {
         padding: 6px 12px;
     }
-
     .btn-reset {
         font-size: 12px;
         padding: 5px 12px;
+    }
+    .mode-btn {
+        font-size: 12px;
+        padding: 5px 14px;
     }
 }
 
@@ -466,47 +466,41 @@ body {
     .cell {
         font-size: 20px;
     }
-
     .header {
         padding: 4px 12px;
         min-height: 36px;
     }
-
     .logo {
         font-size: 13px;
     }
-
     .controls-menu button {
         width: 30px;
         height: 30px;
         font-size: 13px;
     }
-
     .container {
         padding: 4px;
     }
-
     .game-container {
         gap: 4px;
     }
-
     .game-info {
         padding: 4px 10px;
     }
-
     .turn-indicator {
         font-size: 11px;
     }
-
     .turn-indicator .piece {
         font-size: 14px;
     }
-
     .game-status {
         font-size: 10px;
     }
-
     .btn-reset {
+        font-size: 10px;
+        padding: 4px 10px;
+    }
+    .mode-btn {
         font-size: 10px;
         padding: 4px 10px;
     }

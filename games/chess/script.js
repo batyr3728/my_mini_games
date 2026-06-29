@@ -1,7 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('DOM загружен');
 
-    // ===== 1. СНАЧАЛА ПОЛУЧАЕМ ВСЕ ЭЛЕМЕНТЫ =====
     const body = document.body;
     const themeBtn = document.getElementById("themeBtn");
     const langBtn = document.getElementById("langBtn");
@@ -15,15 +13,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const turnPiece = document.getElementById('turnPiece');
     const gameStatus = document.getElementById('gameStatus');
     const resetBtn = document.getElementById('resetBtn');
+    const modeBot = document.getElementById('modeBot');
+    const modeTwo = document.getElementById('modeTwo');
 
-    console.log('boardElement:', boardElement);
-
-    // ===== 2. ПОТОМ НАСТРОЙКИ =====
     let theme = localStorage.getItem("theme") || "light";
     let lang = localStorage.getItem("lang") || "ru";
     let accentColor = localStorage.getItem("accentColor") || "green";
+    let gameMode = localStorage.getItem("chessMode") || "bot";
 
-    // ===== 3. ПОТОМ ШАХМАТНЫЕ ПЕРЕМЕННЫЕ =====
     const PIECES = {
         white: { king: '♔', queen: '♕', rook: '♖', bishop: '♗', knight: '♘', pawn: '♙' },
         black: { king: '♚', queen: '♛', rook: '♜', bishop: '♝', knight: '♞', pawn: '♟' }
@@ -34,40 +31,32 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentTurn = 'white';
     let gameOver = false;
     let possibleMoves = [];
+    let isBotThinking = false;
 
-    // ===== 4. ПОТОМ ВСЕ ФУНКЦИИ =====
     function getPieceColor(piece) {
         if (!piece) return null;
-        const whitePieces = Object.values(PIECES.white);
-        const blackPieces = Object.values(PIECES.black);
-        if (whitePieces.includes(piece)) return 'white';
-        if (blackPieces.includes(piece)) return 'black';
+        if (Object.values(PIECES.white).includes(piece)) return 'white';
+        if (Object.values(PIECES.black).includes(piece)) return 'black';
         return null;
     }
 
-    function isValidCell(row, col) { return row >= 0 && row < 8 && col >= 0 && col < 8; }
-
+    function isValidCell(r, c) { return r >= 0 && r < 8 && c >= 0 && c < 8; }
     function isEmpty(piece) { return !piece || piece === ''; }
 
-    // ===== ХОДЫ =====
     function getPawnMoves(row, col, color) {
         const moves = [];
         const dir = color === 'white' ? -1 : 1;
         const startRow = color === 'white' ? 6 : 1;
-
         if (isValidCell(row + dir, col) && isEmpty(board[row + dir][col])) {
             moves.push({ row: row + dir, col });
             if (row === startRow && isValidCell(row + 2 * dir, col) && isEmpty(board[row + 2 * dir][col])) {
                 moves.push({ row: row + 2 * dir, col });
             }
         }
-
-        for (const dcol of [-1, 1]) {
-            if (isValidCell(row + dir, col + dcol)) {
-                const target = board[row + dir][col + dcol];
-                if (target && getPieceColor(target) !== color) {
-                    moves.push({ row: row + dir, col: col + dcol });
-                }
+        for (const dc of [-1, 1]) {
+            if (isValidCell(row + dir, col + dc)) {
+                const target = board[row + dir][col + dc];
+                if (target && getPieceColor(target) !== color) moves.push({ row: row + dir, col: col + dc });
             }
         }
         return moves;
@@ -88,8 +77,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function getBishopMoves(row, col, color) {
         const moves = [];
-        const directions = [[-1,-1],[-1,1],[1,-1],[1,1]];
-        for (const [dr, dc] of directions) {
+        const dirs = [[-1,-1],[-1,1],[1,-1],[1,1]];
+        for (const [dr, dc] of dirs) {
             let r = row + dr, c = col + dc;
             while (isValidCell(r, c)) {
                 const target = board[r][c];
@@ -106,8 +95,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function getRookMoves(row, col, color) {
         const moves = [];
-        const directions = [[-1,0],[1,0],[0,-1],[0,1]];
-        for (const [dr, dc] of directions) {
+        const dirs = [[-1,0],[1,0],[0,-1],[0,1]];
+        for (const [dr, dc] of dirs) {
             let r = row + dr, c = col + dc;
             while (isValidCell(r, c)) {
                 const target = board[r][c];
@@ -143,10 +132,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const piece = board[row][col];
         if (!piece) return [];
         const color = getPieceColor(piece);
-        const pieceType = Object.keys(PIECES.white).find(key => PIECES.white[key] === piece) ||
-                         Object.keys(PIECES.black).find(key => PIECES.black[key] === piece);
-
-        switch (pieceType) {
+        const type = Object.keys(PIECES.white).find(k => PIECES.white[k] === piece) ||
+                     Object.keys(PIECES.black).find(k => PIECES.black[k] === piece);
+        switch(type) {
             case 'pawn': return getPawnMoves(row, col, color);
             case 'knight': return getKnightMoves(row, col, color);
             case 'bishop': return getBishopMoves(row, col, color);
@@ -157,22 +145,20 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // ===== ПРОВЕРКА ШАХА =====
     function isKingInCheck(color) {
         let kingRow, kingCol;
-        const kingSymbol = color === 'white' ? PIECES.white.king : PIECES.black.king;
+        const king = color === 'white' ? PIECES.white.king : PIECES.black.king;
         for (let r = 0; r < 8; r++) {
             for (let c = 0; c < 8; c++) {
-                if (board[r][c] === kingSymbol) { kingRow = r; kingCol = c; break; }
+                if (board[r][c] === king) { kingRow = r; kingCol = c; break; }
             }
         }
         if (kingRow === undefined) return true;
-
-        const enemyColor = color === 'white' ? 'black' : 'white';
+        const enemy = color === 'white' ? 'black' : 'white';
         for (let r = 0; r < 8; r++) {
             for (let c = 0; c < 8; c++) {
                 const piece = board[r][c];
-                if (piece && getPieceColor(piece) === enemyColor) {
+                if (piece && getPieceColor(piece) === enemy) {
                     const moves = getMoves(r, c);
                     if (moves.some(m => m.row === kingRow && m.col === kingCol)) return true;
                 }
@@ -182,25 +168,113 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function wouldBeInCheck(row, col, newRow, newCol, color) {
-        const targetPiece = board[newRow][newCol];
-        const movingPiece = board[row][col];
-        board[newRow][newCol] = movingPiece;
+        const target = board[newRow][newCol];
+        const moving = board[row][col];
+        board[newRow][newCol] = moving;
         board[row][col] = '';
-        const inCheck = isKingInCheck(color);
-        board[row][col] = movingPiece;
-        board[newRow][newCol] = targetPiece;
-        return inCheck;
+        const check = isKingInCheck(color);
+        board[row][col] = moving;
+        board[newRow][newCol] = target;
+        return check;
     }
 
     function getSafeMoves(row, col) {
         const piece = board[row][col];
         if (!piece) return [];
         const color = getPieceColor(piece);
-        const moves = getMoves(row, col);
-        return moves.filter(m => !wouldBeInCheck(row, col, m.row, m.col, color));
+        return getMoves(row, col).filter(m => !wouldBeInCheck(row, col, m.row, m.col, color));
     }
 
-    // ===== ПРОВЕРКА СОСТОЯНИЯ =====
+    function getAllMoves(color) {
+        const moves = [];
+        for (let r = 0; r < 8; r++) {
+            for (let c = 0; c < 8; c++) {
+                const piece = board[r][c];
+                if (piece && getPieceColor(piece) === color) {
+                    for (const m of getSafeMoves(r, c)) {
+                        moves.push({ from: { row: r, col: c }, to: m });
+                    }
+                }
+            }
+        }
+        return moves;
+    }
+
+    function botMove() {
+        if (isBotThinking || gameOver || currentTurn !== 'black') return;
+        isBotThinking = true;
+        gameStatus.textContent = lang === 'ru' ? '🤔 Бот думает...' : '🤔 Bot thinking...';
+        
+        setTimeout(() => {
+            const moves = getAllMoves('black');
+            if (moves.length === 0) {
+                isBotThinking = false;
+                updateGameStatus();
+                return;
+            }
+
+            let bestMove = null;
+            let bestScore = -9999;
+
+            for (const move of moves) {
+                const captured = board[move.to.row][move.to.col];
+                const moving = board[move.from.row][move.from.col];
+                board[move.to.row][move.to.col] = moving;
+                board[move.from.row][move.from.col] = '';
+
+                const inCheck = isKingInCheck('black');
+                
+                let score = 0;
+                
+                if (captured) {
+                    const capturedColor = getPieceColor(captured);
+                    if (capturedColor === 'white') {
+                        const pieceValues = {
+                            '♔': 1000, '♕': 9, '♖': 5, '♗': 3, '♘': 3, '♙': 1,
+                            '♚': 1000, '♛': 9, '♜': 5, '♝': 3, '♞': 3, '♟': 1
+                        };
+                        score += pieceValues[captured] || 0;
+                    }
+                }
+
+                if (inCheck) {
+                    score -= 100;
+                }
+
+                if (moving === '♟' && move.to.row === 7) {
+                    score += 5;
+                }
+
+                const centerDist = Math.abs(move.to.row - 3.5) + Math.abs(move.to.col - 3.5);
+                score += (7 - centerDist) * 0.1;
+
+                board[move.from.row][move.from.col] = moving;
+                board[move.to.row][move.to.col] = captured;
+
+                if (score > bestScore) {
+                    bestScore = score;
+                    bestMove = move;
+                }
+            }
+
+            if (!bestMove) {
+                bestMove = moves[Math.floor(Math.random() * moves.length)];
+            }
+
+            const piece = board[bestMove.from.row][bestMove.from.col];
+            board[bestMove.to.row][bestMove.to.col] = piece;
+            board[bestMove.from.row][bestMove.from.col] = '';
+            
+            currentTurn = 'white';
+            selected = null;
+            possibleMoves = [];
+            isBotThinking = false;
+            updateUI();
+            renderBoard();
+            updateGameStatus();
+        }, 500);
+    }
+
     function checkGameState(color) {
         let hasMoves = false;
         for (let r = 0; r < 8; r++) {
@@ -212,9 +286,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             if (hasMoves) break;
         }
-
         const inCheck = isKingInCheck(color);
-
         if (!hasMoves) {
             if (inCheck) return { status: 'mate', winner: color === 'white' ? 'black' : 'white' };
             return { status: 'stalemate' };
@@ -228,7 +300,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const state = checkGameState(currentTurn);
             const isRu = lang === 'ru';
             if (state.status === 'check') {
-                gameStatus.textContent = isRu ? 'Шах!' : 'Check!';
+                const player = currentTurn === 'white' ? (isRu ? 'Белые' : 'White') : (isRu ? 'Чёрные' : 'Black');
+                gameStatus.textContent = isRu ? `Шах! ${player} под шахом` : `Check! ${player} in check`;
             } else {
                 gameStatus.textContent = isRu ? 'Игра продолжается' : 'Game continues';
             }
@@ -238,19 +311,31 @@ document.addEventListener('DOMContentLoaded', () => {
     function updateUI() {
         if (!turnText || !turnPiece) return;
         const isRu = lang === 'ru';
-        const turnName = currentTurn === 'white' ? (isRu ? 'Белых' : 'White') : (isRu ? 'Чёрных' : 'Black');
-        turnText.textContent = isRu ? `Ход ${turnName}` : `${turnName}'s turn`;
+        const name = currentTurn === 'white' ? (isRu ? 'Белых' : 'White') : (isRu ? 'Чёрных' : 'Black');
+        turnText.textContent = isRu ? `Ход ${name}` : `${name}'s turn`;
         turnPiece.textContent = currentTurn === 'white' ? PIECES.white.king : PIECES.black.king;
     }
 
     function renderBoard() {
-        console.log('renderBoard вызван');
-        if (!boardElement) {
-            console.error('boardElement не найден!');
-            return;
+        if (!boardElement) return;
+        boardElement.innerHTML = '';
+        
+        let kingRow = -1, kingCol = -1;
+        if (!gameOver && board.length > 0) {
+            const kingSymbol = currentTurn === 'white' ? PIECES.white.king : PIECES.black.king;
+            for (let r = 0; r < 8; r++) {
+                for (let c = 0; c < 8; c++) {
+                    if (board[r][c] === kingSymbol) {
+                        kingRow = r;
+                        kingCol = c;
+                        break;
+                    }
+                }
+                if (kingRow !== -1) break;
+            }
         }
         
-        boardElement.innerHTML = '';
+        const isCheck = !gameOver && kingRow !== -1 && isKingInCheck(currentTurn);
         
         for (let r = 0; r < 8; r++) {
             for (let c = 0; c < 8; c++) {
@@ -258,18 +343,29 @@ document.addEventListener('DOMContentLoaded', () => {
                 cell.className = 'cell';
                 if ((r + c) % 2 === 1) cell.classList.add('dark');
 
+                if (isCheck && r === kingRow && c === kingCol) {
+                    cell.style.background = '#ff4444';
+                    cell.style.boxShadow = 'inset 0 0 30px rgba(255,0,0,0.8)';
+                }
+
                 const piece = board[r][c];
                 if (piece) {
                     cell.textContent = piece;
                     const color = getPieceColor(piece);
-                    if (color === 'white') cell.classList.add('white-piece');
-                    if (color === 'black') cell.classList.add('black-piece');
+                    if (color === 'white') {
+                        cell.classList.add('white-piece');
+                    }
+                    if (color === 'black') {
+                        cell.classList.add('black-piece');
+                        if (gameMode === 'two') {
+                            cell.style.transform = 'rotate(180deg)';
+                        }
+                    }
                 }
 
                 if (selected && selected.row === r && selected.col === c) {
                     cell.classList.add('selected');
                 }
-
                 if (possibleMoves.some(m => m.row === r && m.col === c)) {
                     cell.classList.add('possible');
                 }
@@ -278,26 +374,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 boardElement.appendChild(cell);
             }
         }
-        console.log('Отрисовка завершена, клеток:', boardElement.children.length);
     }
 
     function handleCellClick(row, col) {
-        if (gameOver) return;
+        if (gameOver || isBotThinking) return;
+        if (gameMode === 'bot' && currentTurn === 'black') return;
 
         const piece = board[row][col];
         const color = getPieceColor(piece);
 
         if (selected) {
-            const isPossibleMove = possibleMoves.some(m => m.row === row && m.col === col);
-            if (isPossibleMove) {
-                const movingPiece = board[selected.row][selected.col];
-                board[row][col] = movingPiece;
+            const isMove = possibleMoves.some(m => m.row === row && m.col === col);
+            if (isMove) {
+                const moving = board[selected.row][selected.col];
+                board[row][col] = moving;
                 board[selected.row][selected.col] = '';
-
-                const newTurn = currentTurn === 'white' ? 'black' : 'white';
-                currentTurn = newTurn;
-
-                const state = checkGameState(newTurn);
+                currentTurn = currentTurn === 'white' ? 'black' : 'white';
+                const state = checkGameState(currentTurn);
                 const isRu = lang === 'ru';
                 if (state.status === 'mate') {
                     gameOver = true;
@@ -308,16 +401,21 @@ document.addEventListener('DOMContentLoaded', () => {
                     gameOver = true;
                     gameStatus.textContent = isRu ? 'Пат! Ничья' : 'Stalemate! Draw';
                 } else {
-                    updateGameStatus();
+                    if (gameMode === 'bot' && currentTurn === 'black') {
+                        gameStatus.textContent = lang === 'ru' ? '🤔 Бот думает...' : '🤔 Bot thinking...';
+                    } else {
+                        updateGameStatus();
+                    }
                 }
-
                 selected = null;
                 possibleMoves = [];
                 updateUI();
                 renderBoard();
+                if (gameMode === 'bot' && !gameOver && currentTurn === 'black') {
+                    botMove();
+                }
                 return;
             }
-
             if (piece && color === currentTurn) {
                 selected = { row, col };
                 possibleMoves = getSafeMoves(row, col);
@@ -325,7 +423,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 updateUI();
                 return;
             }
-
             selected = null;
             possibleMoves = [];
             renderBoard();
@@ -345,27 +442,39 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function initBoard() {
-        console.log('initBoard вызван');
-        board = [
-            ['♜', '♞', '♝', '♛', '♚', '♝', '♞', '♜'],
-            ['♟', '♟', '♟', '♟', '♟', '♟', '♟', '♟'],
-            ['', '', '', '', '', '', '', ''],
-            ['', '', '', '', '', '', '', ''],
-            ['', '', '', '', '', '', '', ''],
-            ['', '', '', '', '', '', '', ''],
-            ['♙', '♙', '♙', '♙', '♙', '♙', '♙', '♙'],
-            ['♖', '♘', '♗', '♕', '♔', '♗', '♘', '♖']
-        ];
+        if (gameMode === 'two') {
+            board = [
+                ['♜', '♞', '♝', '♛', '♚', '♝', '♞', '♜'],
+                ['♟', '♟', '♟', '♟', '♟', '♟', '♟', '♟'],
+                ['', '', '', '', '', '', '', ''],
+                ['', '', '', '', '', '', '', ''],
+                ['', '', '', '', '', '', '', ''],
+                ['', '', '', '', '', '', '', ''],
+                ['♙', '♙', '♙', '♙', '♙', '♙', '♙', '♙'],
+                ['♖', '♘', '♗', '♕', '♔', '♗', '♘', '♖']
+            ];
+        } else {
+            board = [
+                ['♜', '♞', '♝', '♛', '♚', '♝', '♞', '♜'],
+                ['♟', '♟', '♟', '♟', '♟', '♟', '♟', '♟'],
+                ['', '', '', '', '', '', '', ''],
+                ['', '', '', '', '', '', '', ''],
+                ['', '', '', '', '', '', '', ''],
+                ['', '', '', '', '', '', '', ''],
+                ['♙', '♙', '♙', '♙', '♙', '♙', '♙', '♙'],
+                ['♖', '♘', '♗', '♕', '♔', '♗', '♘', '♖']
+            ];
+        }
         currentTurn = 'white';
         gameOver = false;
         selected = null;
         possibleMoves = [];
+        isBotThinking = false;
         updateUI();
         renderBoard();
         updateGameStatus();
     }
 
-    // ===== 5. ПОТОМ ФУНКЦИИ НАСТРОЕК =====
     function applyTheme() {
         body.setAttribute("data-theme", theme);
         if (themeBtn) themeBtn.textContent = theme === "light" ? "🌗" : "🌓";
@@ -385,11 +494,16 @@ document.addEventListener('DOMContentLoaded', () => {
         if (title) title.textContent = isRu ? "Шахматы" : "Chess";
         if (turnText) turnText.textContent = isRu ? "Ход белых" : "White's turn";
         if (resetBtn) resetBtn.textContent = isRu ? "↻ Новая игра" : "↻ New Game";
-        // НЕ ВЫЗЫВАЕМ updateGameStatus() ЗДЕСЬ!
         localStorage.setItem("lang", lang);
     }
 
-    // ===== 6. ПОТОМ СОБЫТИЯ =====
+    function applyMode() {
+        modeBot.classList.toggle('active', gameMode === 'bot');
+        modeTwo.classList.toggle('active', gameMode === 'two');
+        localStorage.setItem("chessMode", gameMode);
+        initBoard();
+    }
+
     if (burgerToggle && controlsMenu) {
         burgerToggle.addEventListener("click", (e) => {
             e.stopPropagation();
@@ -415,7 +529,7 @@ document.addEventListener('DOMContentLoaded', () => {
             lang = lang === "ru" ? "en" : "ru";
             applyLang();
             updateUI();
-            updateGameStatus(); // Обновляем статус после смены языка
+            updateGameStatus();
         });
     }
 
@@ -436,9 +550,20 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // ===== 7. САМЫЙ ПОСЛЕДНИЙ ЭТАП =====
+    modeBot.addEventListener('click', () => {
+        if (gameMode === 'bot') return;
+        gameMode = 'bot';
+        applyMode();
+    });
+
+    modeTwo.addEventListener('click', () => {
+        if (gameMode === 'two') return;
+        gameMode = 'two';
+        applyMode();
+    });
+
     applyTheme();
     applyAccentColor();
     applyLang();
-    initBoard();
+    applyMode();
 });
