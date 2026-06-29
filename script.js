@@ -19,6 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const rpsBtn = document.getElementById("rpsBtn");
   const tttBtn = document.getElementById("tttBtn");
   const sudokuBtn = document.getElementById("sudokuBtn");
+  const chessBtn = document.getElementById("chessBtn");
   const soonBtns = document.querySelectorAll(".soon");
 
   // Чтение базовых настроек
@@ -33,7 +34,8 @@ document.addEventListener('DOMContentLoaded', () => {
     minesweeperBtn: 0,
     rpsBtn: 0,
     tttBtn: 0,
-    sudokuBtn: 0
+    sudokuBtn: 0,
+    chessBtn: 0
   };
 
   const gameNames = {
@@ -42,7 +44,8 @@ document.addEventListener('DOMContentLoaded', () => {
     minesweeperBtn: "Сапер",
     rpsBtn: "Камень Ножницы Бумага",
     tttBtn: "Крестики Нолики",
-    sudokuBtn: "Судоку"
+    sudokuBtn: "Судоку",
+    chessBtn: "Шахматы"
   };
 
   /* ЛОГИКА БУРГЕРА (Три точки) */
@@ -63,7 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
   /* СОРТИРОВКА ИГР */
   function sortGames() {
     if (!gamesGrid) return;
-    const cards = [g2048Btn, memoryBtn, minesweeperBtn, rpsBtn, tttBtn, sudokuBtn].filter(Boolean);
+    const cards = [g2048Btn, memoryBtn, minesweeperBtn, rpsBtn, tttBtn, sudokuBtn, chessBtn].filter(Boolean);
 
     cards.sort((a, b) => {
       const timeA = gameVisVisits[a.id] || 0;
@@ -115,6 +118,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (rpsBtn) rpsBtn.innerHTML = isRu ? "Камень<br>Ножницы<br>Бумага" : "Rock<br>Paper<br>Scissors";
     if (tttBtn) tttBtn.innerHTML = isRu ? "Крестики<br>Нолики" : "Tic<br>Tac<br>Toe";
     if (sudokuBtn) sudokuBtn.innerHTML = isRu ? "Судоку" : "Sudoku";
+    if (chessBtn) chessBtn.innerHTML = isRu ? "Шахматы" : "Chess";
     
     if (soonBtns) {
       soonBtns.forEach(b => { b.textContent = isRu ? "Скоро" : "Soon"; });
@@ -136,6 +140,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (rpsBtn) rpsBtn.addEventListener("click", () => handleGameClick("rpsBtn", "rps"));
   if (tttBtn) tttBtn.addEventListener("click", () => handleGameClick("tttBtn", "ttt"));
   if (sudokuBtn) sudokuBtn.addEventListener("click", () => handleGameClick("sudokuBtn", "sudoku"));
+  if (chessBtn) chessBtn.addEventListener("click", () => handleGameClick("chessBtn", "chess"));
 
   if (themeBtn) {
     themeBtn.addEventListener("click", () => {

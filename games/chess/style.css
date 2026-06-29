@@ -64,10 +64,33 @@ body {
     border-bottom: 1px solid rgba(255,255,255,0.05);
 }
 
-.logo {
+.header-spacer {
+    flex: 1;
+}
+
+.btn-back {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    border: none;
+    background: var(--accent);
+    color: #fff;
     font-size: 18px;
-    font-weight: 700;
-    user-select: none;
+    cursor: pointer;
+    transition: transform 0.15s, background-color 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.btn-back:hover {
+    transform: translateY(-2px);
+    background: var(--accent-hover);
+}
+
+.btn-back:active {
+    transform: scale(0.95);
 }
 
 .controls-wrapper {
@@ -337,9 +360,6 @@ body {
         padding: 8px 12px;
         min-height: 50px;
     }
-    .logo {
-        font-size: 16px;
-    }
     .container {
         padding: 8px;
     }
@@ -407,6 +427,11 @@ body {
         font-size: 12px;
         padding: 6px 14px;
     }
+    .btn-back {
+        width: 32px;
+        height: 32px;
+        font-size: 16px;
+    }
 }
 
 @media (max-width: 480px) {
@@ -430,6 +455,11 @@ body {
         font-size: 11px;
         padding: 5px 12px;
     }
+    .btn-back {
+        width: 28px;
+        height: 28px;
+        font-size: 14px;
+    }
 }
 
 @media (max-height: 700px) {
@@ -439,9 +469,6 @@ body {
     .header {
         padding: 6px 16px;
         min-height: 44px;
-    }
-    .logo {
-        font-size: 15px;
     }
     .container {
         padding: 6px;
@@ -460,6 +487,11 @@ body {
         font-size: 12px;
         padding: 5px 14px;
     }
+    .btn-back {
+        width: 30px;
+        height: 30px;
+        font-size: 15px;
+    }
 }
 
 @media (max-height: 600px) {
@@ -469,9 +501,6 @@ body {
     .header {
         padding: 4px 12px;
         min-height: 36px;
-    }
-    .logo {
-        font-size: 13px;
     }
     .controls-menu button {
         width: 30px;
@@ -503,5 +532,10 @@ body {
     .mode-btn {
         font-size: 10px;
         padding: 4px 10px;
+    }
+    .btn-back {
+        width: 26px;
+        height: 26px;
+        font-size: 12px;
     }
 }

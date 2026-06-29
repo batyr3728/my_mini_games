@@ -3,10 +3,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const body = document.body;
     const themeBtn = document.getElementById("themeBtn");
     const langBtn = document.getElementById("langBtn");
-    const title = document.getElementById("title");
     const colorPicker = document.getElementById("colorPicker");
     const burgerToggle = document.getElementById("burgerToggle");
     const controlsMenu = document.getElementById("controlsMenu");
+    const backBtn = document.getElementById("backBtn");
     
     const boardElement = document.getElementById('chessBoard');
     const turnText = document.getElementById('turnText');
@@ -15,6 +15,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const resetBtn = document.getElementById('resetBtn');
     const modeBot = document.getElementById('modeBot');
     const modeTwo = document.getElementById('modeTwo');
+
+    // ===== КНОПКА НАЗАД =====
+    if (backBtn) {
+        backBtn.addEventListener('click', () => {
+            window.location.href = '../../index.html';
+        });
+    }
 
     let theme = localStorage.getItem("theme") || "light";
     let lang = localStorage.getItem("lang") || "ru";
@@ -491,7 +498,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function applyLang() {
         const isRu = lang === "ru";
-        if (title) title.textContent = isRu ? "Шахматы" : "Chess";
         if (turnText) turnText.textContent = isRu ? "Ход белых" : "White's turn";
         if (resetBtn) resetBtn.textContent = isRu ? "↻ Новая игра" : "↻ New Game";
         localStorage.setItem("lang", lang);
