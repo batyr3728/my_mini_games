@@ -1,0 +1,513 @@
+/* ===== КОРНЕВЫЕ ПЕРЕМЕННЫЕ ===== */
+:root {
+    --bg-page:    #f8f9fa;
+    --bg-header:  #e9ecef;
+    --bg-card:    #ffffff;
+    --text:       #212529;
+    --shadow:     0 10px 24px rgba(0,0,0,0.06);
+    --shadow-hov: 0 14px 32px rgba(0,0,0,0.12);
+    
+    --accent:       #4caf50;
+    --accent-hover: #439a46;
+}
+
+/* ===== ТЁМНАЯ ТЕМА ===== */
+[data-theme="dark"] {
+    --bg-page:    #121212;
+    --bg-header:  #1a1a1a;
+    --bg-card:    #1e1e1e;
+    --text:       #e0e0e0;
+    --shadow:     0 10px 24px rgba(0,0,0,0.3);
+    --shadow-hov: 0 14px 32px rgba(0,0,0,0.4);
+    
+    --accent:       #66bb6a;
+    --accent-hover: #81c784;
+}
+
+/* ===== ЦВЕТОВЫЕ СХЕМЫ ===== */
+body[data-color="green"]  { --accent: #4caf50; --accent-hover: #439a46; }
+body[data-color="blue"]   { --accent: #2196f3; --accent-hover: #1e88e5; }
+body[data-color="purple"] { --accent: #9c27b0; --accent-hover: #8e24aa; }
+body[data-color="orange"] { --accent: #ff9800; --accent-hover: #fb8c00; }
+
+[data-theme="dark"][data-color="green"]  { --accent: #66bb6a; --accent-hover: #81c784; }
+[data-theme="dark"][data-color="blue"]   { --accent: #64b5f6; --accent-hover: #90caf9; }
+[data-theme="dark"][data-color="purple"] { --accent: #ba68c8; --accent-hover: #ce93d8; }
+[data-theme="dark"][data-color="orange"] { --accent: #ffb74d; --accent-hover: #ffe082; }
+
+/* ===== ОБЩИЕ СТИЛИ ===== */
+* { box-sizing: border-box; }
+
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    overflow: hidden;
+}
+
+body {
+    background: var(--bg-page);
+    color: var(--text);
+    font-family: system-ui, -apple-system, sans-serif;
+    transition: background 0.3s, color 0.3s;
+    display: flex;
+    flex-direction: column;
+}
+
+/* ===== ХЕДЕР ===== */
+.header {
+    flex-shrink: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    background: var(--bg-header);
+    transition: background 0.3s;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+    min-height: 60px;
+}
+
+[data-theme="dark"] .header {
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.logo {
+    font-size: 18px;
+    font-weight: 700;
+    user-select: none;
+}
+
+.controls-wrapper {
+    position: relative;
+}
+
+/* ===== МЕНЮ УПРАВЛЕНИЯ ===== */
+.controls-menu {
+    display: flex;
+    align-items: center;
+}
+
+.burger-toggle {
+    display: none;
+    font-size: 24px;
+    background: transparent;
+    border: none;
+    color: var(--text);
+    cursor: pointer;
+    padding: 0 10px;
+    line-height: 1;
+    user-select: none;
+}
+
+/* ===== ВЫБОР ЦВЕТА ===== */
+.color-picker {
+    display: flex;
+    gap: 6px;
+    margin-right: 12px;
+    background: rgba(0,0,0,0.05);
+    padding: 5px 8px;
+    border-radius: 20px;
+    transition: background 0.3s;
+}
+
+[data-theme="dark"] .color-picker {
+    background: rgba(255,255,255,0.05);
+}
+
+.color-dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: transform 0.15s, border 0.15s;
+    border: 2px solid transparent;
+}
+
+.color-dot:hover {
+    transform: scale(1.2);
+}
+
+.color-dot.active {
+    border-color: var(--text);
+    transform: scale(1.1);
+}
+
+.theme-green  { background: #4caf50; }
+.theme-blue   { background: #2196f3; }
+.theme-purple { background: #9c27b0; }
+.theme-orange { background: #ff9800; }
+
+/* ===== КНОПКИ МЕНЮ ===== */
+.controls-menu button {
+    width: 36px;
+    height: 36px;
+    margin-left: 8px;
+    border-radius: 8px;
+    border: none;
+    background: var(--accent);
+    color: #fff;
+    font-size: 16px;
+    cursor: pointer;
+    transition: transform 0.15s, background-color 0.2s;
+}
+
+.controls-menu button:hover {
+    transform: translateY(-2px);
+    background: var(--accent-hover);
+}
+
+.controls-menu button:active {
+    transform: scale(0.95);
+}
+
+/* ===== КОНТЕЙНЕР ===== */
+.container {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px;
+    overflow: hidden;
+}
+
+.game-container {
+    width: 100%;
+    max-width: 560px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* ===== ШАХМАТНАЯ ДОСКА ===== */
+.chess-board {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    aspect-ratio: 1 / 1;
+    background: var(--bg-card);
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    border: 3px solid var(--accent);
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.cell {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 38px;
+    aspect-ratio: 1 / 1;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.15s;
+    user-select: none;
+    background: #f0d9b5;
+    color: #1a1a1a;
+}
+
+.cell.dark {
+    background: #b58863;
+}
+
+.cell.selected {
+    background: #7fc97f !important;
+    transform: scale(1.05);
+}
+
+.cell.possible {
+    background: #b5d6b5 !important;
+    box-shadow: inset 0 0 20px rgba(0, 255, 0, 0.3);
+}
+
+.cell:hover {
+    transform: scale(1.02);
+}
+
+.cell:active {
+    transform: scale(0.95);
+}
+
+/* Белые фигуры */
+.cell.white-piece {
+    color: #ffffff;
+    text-shadow: 0 0 8px rgba(0,0,0,0.5);
+}
+
+/* Чёрные фигуры */
+.cell.black-piece {
+    color: #1a1a1a;
+    text-shadow: 0 0 8px rgba(255,255,255,0.3);
+}
+
+/* ===== ТЁМНАЯ ТЕМА ДЛЯ ДОСКИ ===== */
+[data-theme="dark"] .cell {
+    background: #779952;
+    color: #e8e8e8;
+}
+
+[data-theme="dark"] .cell.dark {
+    background: #4a6b3a;
+}
+
+[data-theme="dark"] .cell.white-piece {
+    color: #ffffff;
+    text-shadow: 0 0 10px rgba(0,0,0,0.8);
+}
+
+[data-theme="dark"] .cell.black-piece {
+    color: #1a1a1a;
+    text-shadow: 0 0 10px rgba(255,255,255,0.4);
+}
+
+[data-theme="dark"] .cell.selected {
+    background: #5a9a5a !important;
+}
+
+[data-theme="dark"] .cell.possible {
+    background: #3a7a3a !important;
+}
+
+/* ===== ИНФОРМАЦИЯ ОБ ИГРЕ ===== */
+.game-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 15px;
+    background: var(--bg-card);
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+    transition: background 0.3s, box-shadow 0.3s;
+    flex-shrink: 0;
+}
+
+.turn-indicator {
+    font-size: 16px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.turn-indicator .piece {
+    font-size: 24px;
+}
+
+.game-status {
+    font-size: 14px;
+    opacity: 0.8;
+}
+
+.btn-reset {
+    padding: 8px 20px;
+    border: none;
+    border-radius: 8px;
+    background: var(--accent);
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.15s;
+    white-space: nowrap;
+}
+
+.btn-reset:hover {
+    background: var(--accent-hover);
+    transform: translateY(-2px);
+}
+
+.btn-reset:active {
+    transform: scale(0.95);
+}
+
+/* ===== АДАПТИВ ===== */
+@media (max-width: 768px) {
+    .header {
+        padding: 8px 12px;
+        min-height: 50px;
+    }
+
+    .logo {
+        font-size: 16px;
+    }
+
+    .container {
+        padding: 8px;
+    }
+
+    .game-container {
+        max-width: 100%;
+        gap: 8px;
+    }
+
+    .burger-toggle {
+        display: block;
+        font-size: 22px;
+    }
+
+    .controls-menu {
+        display: none;
+        position: absolute;
+        top: 45px;
+        right: 0;
+        background: var(--bg-card);
+        padding: 12px;
+        border-radius: 12px;
+        box-shadow: var(--shadow-hov);
+        flex-direction: column;
+        gap: 10px;
+        min-width: 160px;
+        z-index: 110;
+        border: 1px solid rgba(0,0,0,0.05);
+    }
+
+    [data-theme="dark"] .controls-menu {
+        border: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .controls-menu.open {
+        display: flex;
+    }
+
+    .color-picker {
+        margin-right: 0;
+        justify-content: center;
+        width: 100%;
+    }
+
+    .controls-menu button {
+        margin-left: 0;
+        width: 100%;
+    }
+
+    .cell {
+        font-size: 28px;
+    }
+
+    .game-info {
+        flex-wrap: wrap;
+        gap: 6px;
+        justify-content: center;
+        padding: 8px 12px;
+    }
+
+    .turn-indicator {
+        font-size: 14px;
+    }
+
+    .turn-indicator .piece {
+        font-size: 20px;
+    }
+
+    .game-status {
+        font-size: 12px;
+    }
+
+    .btn-reset {
+        font-size: 12px;
+        padding: 6px 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    .cell {
+        font-size: 20px;
+    }
+
+    .game-info {
+        padding: 6px 10px;
+    }
+
+    .turn-indicator {
+        font-size: 12px;
+    }
+
+    .turn-indicator .piece {
+        font-size: 16px;
+    }
+
+    .btn-reset {
+        font-size: 11px;
+        padding: 5px 12px;
+    }
+}
+
+@media (max-height: 700px) {
+    .cell {
+        font-size: 28px;
+    }
+
+    .header {
+        padding: 6px 16px;
+        min-height: 44px;
+    }
+
+    .logo {
+        font-size: 15px;
+    }
+
+    .container {
+        padding: 6px;
+    }
+
+    .game-container {
+        gap: 6px;
+    }
+
+    .game-info {
+        padding: 6px 12px;
+    }
+
+    .btn-reset {
+        font-size: 12px;
+        padding: 5px 12px;
+    }
+}
+
+@media (max-height: 600px) {
+    .cell {
+        font-size: 20px;
+    }
+
+    .header {
+        padding: 4px 12px;
+        min-height: 36px;
+    }
+
+    .logo {
+        font-size: 13px;
+    }
+
+    .controls-menu button {
+        width: 30px;
+        height: 30px;
+        font-size: 13px;
+    }
+
+    .container {
+        padding: 4px;
+    }
+
+    .game-container {
+        gap: 4px;
+    }
+
+    .game-info {
+        padding: 4px 10px;
+    }
+
+    .turn-indicator {
+        font-size: 11px;
+    }
+
+    .turn-indicator .piece {
+        font-size: 14px;
+    }
+
+    .game-status {
+        font-size: 10px;
+    }
+
+    .btn-reset {
+        font-size: 10px;
+        padding: 4px 10px;
+    }
+}
