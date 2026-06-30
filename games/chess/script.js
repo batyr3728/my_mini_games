@@ -1,33 +1,50 @@
 document.addEventListener('DOMContentLoaded', () => {
 
+    // ===== ЭЛЕМЕНТЫ =====
     const body = document.body;
-    const themeBtn = document.getElementById("themeBtn");
-    const langBtn = document.getElementById("langBtn");
-    const colorPicker = document.getElementById("colorPicker");
-    const burgerToggle = document.getElementById("burgerToggle");
-    const controlsMenu = document.getElementById("controlsMenu");
-    const backBtn = document.getElementById("backBtn");
-    
     const boardElement = document.getElementById('chessBoard');
-    const turnText = document.getElementById('turnText');
-    const turnPiece = document.getElementById('turnPiece');
-    const gameStatus = document.getElementById('gameStatus');
-    const resetBtn = document.getElementById('resetBtn');
-    const modeBot = document.getElementById('modeBot');
-    const modeTwo = document.getElementById('modeTwo');
+    const turnDisplay = document.getElementById('turnDisplay');
+    const resetBtn = document.getElementById('reset-btn');
+    const backBtn = document.getElementById('back-btn');
+    const themeBtn = document.getElementById('themeBtn');
+    const langBtn = document.getElementById('langBtn');
+    const modeOptions = document.querySelectorAll('.mode-option');
+    const modeLabel = document.getElementById('modeLabel');
+    const turnLabel = document.getElementById('turnLabel');
+    const modeBotText = document.getElementById('modeBotText');
+    const modeTwoText = document.getElementById('modeTwoText');
 
-    // ===== КНОПКА НАЗАД =====
-    if (backBtn) {
-        backBtn.addEventListener('click', () => {
-            window.location.href = '../../index.html';
-        });
-    }
-
+    // ===== НАСТРОЙКИ =====
     let theme = localStorage.getItem("theme") || "light";
     let lang = localStorage.getItem("lang") || "ru";
     let accentColor = localStorage.getItem("accentColor") || "green";
     let gameMode = localStorage.getItem("chessMode") || "bot";
 
+    // ===== ПЕРЕВОДЫ =====
+    const translations = {
+        ru: {
+            bot: 'С ботом',
+            two: 'На двоих',
+            turnWhite: 'Белые',
+            turnBlack: 'Чёрные',
+            thinking: '🤔 Бот думает...',
+            reset: 'Новая игра',
+            mode: 'РЕЖИМ',
+            turn: 'ХОД'
+        },
+        en: {
+            bot: 'With bot',
+            two: 'Two players',
+            turnWhite: 'White',
+            turnBlack: 'Black',
+            thinking: '🤔 Bot thinking...',
+            reset: 'New Game',
+            mode: 'MODE',
+            turn: 'TURN'
+        }
+    };
+
+    // ===== ШАХМАТЫ =====
     const PIECES = {
         white: { king: '♔', queen: '♕', rook: '♖', bishop: '♗', knight: '♘', pawn: '♙' },
         black: { king: '♚', queen: '♛', rook: '♜', bishop: '♝', knight: '♞', pawn: '♟' }
@@ -40,6 +57,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let possibleMoves = [];
     let isBotThinking = false;
 
+    // ===== ФУНКЦИИ ШАХМАТ =====
     function getPieceColor(piece) {
         if (!piece) return null;
         if (Object.values(PIECES.white).includes(piece)) return 'white';
@@ -153,18 +171,21 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function isKingInCheck(color) {
+        // Защита от пустой доски
+        if (!board || board.length === 0) return false;
+        
         let kingRow, kingCol;
         const king = color === 'white' ? PIECES.white.king : PIECES.black.king;
         for (let r = 0; r < 8; r++) {
             for (let c = 0; c < 8; c++) {
-                if (board[r][c] === king) { kingRow = r; kingCol = c; break; }
+                if (board[r] && board[r][c] === king) { kingRow = r; kingCol = c; break; }
             }
         }
         if (kingRow === undefined) return true;
         const enemy = color === 'white' ? 'black' : 'white';
         for (let r = 0; r < 8; r++) {
             for (let c = 0; c < 8; c++) {
-                const piece = board[r][c];
+                const piece = board[r] && board[r][c];
                 if (piece && getPieceColor(piece) === enemy) {
                     const moves = getMoves(r, c);
                     if (moves.some(m => m.row === kingRow && m.col === kingCol)) return true;
@@ -196,7 +217,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const moves = [];
         for (let r = 0; r < 8; r++) {
             for (let c = 0; c < 8; c++) {
-                const piece = board[r][c];
+                const piece = board[r] && board[r][c];
                 if (piece && getPieceColor(piece) === color) {
                     for (const m of getSafeMoves(r, c)) {
                         moves.push({ from: { row: r, col: c }, to: m });
@@ -207,16 +228,17 @@ document.addEventListener('DOMContentLoaded', () => {
         return moves;
     }
 
+    // ===== БОТ =====
     function botMove() {
         if (isBotThinking || gameOver || currentTurn !== 'black') return;
         isBotThinking = true;
-        gameStatus.textContent = lang === 'ru' ? '🤔 Бот думает...' : '🤔 Bot thinking...';
-        
+        updateUI();
+
         setTimeout(() => {
             const moves = getAllMoves('black');
             if (moves.length === 0) {
                 isBotThinking = false;
-                updateGameStatus();
+                updateUI();
                 return;
             }
 
@@ -230,9 +252,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 board[move.from.row][move.from.col] = '';
 
                 const inCheck = isKingInCheck('black');
-                
                 let score = 0;
-                
+
                 if (captured) {
                     const capturedColor = getPieceColor(captured);
                     if (capturedColor === 'white') {
@@ -244,14 +265,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }
 
-                if (inCheck) {
-                    score -= 100;
-                }
-
-                if (moving === '♟' && move.to.row === 7) {
-                    score += 5;
-                }
-
+                if (inCheck) score -= 100;
+                if (moving === '♟' && move.to.row === 7) score += 5;
                 const centerDist = Math.abs(move.to.row - 3.5) + Math.abs(move.to.col - 3.5);
                 score += (7 - centerDist) * 0.1;
 
@@ -271,22 +286,24 @@ document.addEventListener('DOMContentLoaded', () => {
             const piece = board[bestMove.from.row][bestMove.from.col];
             board[bestMove.to.row][bestMove.to.col] = piece;
             board[bestMove.from.row][bestMove.from.col] = '';
-            
+
             currentTurn = 'white';
             selected = null;
             possibleMoves = [];
             isBotThinking = false;
             updateUI();
             renderBoard();
-            updateGameStatus();
-        }, 500);
+        }, 400);
     }
 
+    // ===== СОСТОЯНИЕ ИГРЫ =====
     function checkGameState(color) {
+        if (!board || board.length === 0) return { status: 'playing' };
+        
         let hasMoves = false;
         for (let r = 0; r < 8; r++) {
             for (let c = 0; c < 8; c++) {
-                const piece = board[r][c];
+                const piece = board[r] && board[r][c];
                 if (piece && getPieceColor(piece) === color) {
                     if (getSafeMoves(r, c).length > 0) { hasMoves = true; break; }
                 }
@@ -302,37 +319,56 @@ document.addEventListener('DOMContentLoaded', () => {
         return { status: 'playing' };
     }
 
-    function updateGameStatus() {
-        if (!gameOver && gameStatus && board.length > 0) {
-            const state = checkGameState(currentTurn);
-            const isRu = lang === 'ru';
-            if (state.status === 'check') {
-                const player = currentTurn === 'white' ? (isRu ? 'Белые' : 'White') : (isRu ? 'Чёрные' : 'Black');
-                gameStatus.textContent = isRu ? `Шах! ${player} под шахом` : `Check! ${player} in check`;
-            } else {
-                gameStatus.textContent = isRu ? 'Игра продолжается' : 'Game continues';
-            }
+    // ===== ОБНОВЛЕНИЕ UI =====
+    function updateUI() {
+        const t = translations[lang] || translations.ru;
+
+        modeLabel.textContent = t.mode;
+        turnLabel.textContent = t.turn;
+        modeBotText.textContent = t.bot;
+        modeTwoText.textContent = t.two;
+
+        modeOptions.forEach(opt => {
+            opt.classList.toggle('active', opt.dataset.mode === gameMode);
+        });
+
+        resetBtn.textContent = t.reset;
+
+        if (isBotThinking) {
+            turnDisplay.textContent = t.thinking;
+            turnDisplay.className = 'value';
+            return;
+        }
+
+        if (gameOver) {
+            return;
+        }
+
+        turnDisplay.textContent = currentTurn === 'white' ? t.turnWhite : t.turnBlack;
+        turnDisplay.className = 'value ' + (currentTurn === 'white' ? 'turn-white' : 'turn-black');
+
+        const state = checkGameState(currentTurn);
+        if (state.status === 'mate' || state.status === 'stalemate') {
+            gameOver = true;
         }
     }
 
-    function updateUI() {
-        if (!turnText || !turnPiece) return;
-        const isRu = lang === 'ru';
-        const name = currentTurn === 'white' ? (isRu ? 'Белых' : 'White') : (isRu ? 'Чёрных' : 'Black');
-        turnText.textContent = isRu ? `Ход ${name}` : `${name}'s turn`;
-        turnPiece.textContent = currentTurn === 'white' ? PIECES.white.king : PIECES.black.king;
-    }
-
+    // ===== ОТРИСОВКА ДОСКИ =====
     function renderBoard() {
         if (!boardElement) return;
+        if (!board || board.length === 0) {
+            boardElement.innerHTML = '';
+            return;
+        }
+
         boardElement.innerHTML = '';
-        
+
         let kingRow = -1, kingCol = -1;
         if (!gameOver && board.length > 0) {
             const kingSymbol = currentTurn === 'white' ? PIECES.white.king : PIECES.black.king;
             for (let r = 0; r < 8; r++) {
                 for (let c = 0; c < 8; c++) {
-                    if (board[r][c] === kingSymbol) {
+                    if (board[r] && board[r][c] === kingSymbol) {
                         kingRow = r;
                         kingCol = c;
                         break;
@@ -341,9 +377,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (kingRow !== -1) break;
             }
         }
-        
+
         const isCheck = !gameOver && kingRow !== -1 && isKingInCheck(currentTurn);
-        
+
         for (let r = 0; r < 8; r++) {
             for (let c = 0; c < 8; c++) {
                 const cell = document.createElement('div');
@@ -351,17 +387,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 if ((r + c) % 2 === 1) cell.classList.add('dark');
 
                 if (isCheck && r === kingRow && c === kingCol) {
-                    cell.style.background = '#ff4444';
-                    cell.style.boxShadow = 'inset 0 0 30px rgba(255,0,0,0.8)';
+                    cell.classList.add('in-check');
                 }
 
-                const piece = board[r][c];
+                const piece = board[r] && board[r][c];
                 if (piece) {
                     cell.textContent = piece;
                     const color = getPieceColor(piece);
-                    if (color === 'white') {
-                        cell.classList.add('white-piece');
-                    }
+                    if (color === 'white') cell.classList.add('white-piece');
                     if (color === 'black') {
                         cell.classList.add('black-piece');
                         if (gameMode === 'two') {
@@ -383,6 +416,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // ===== ОБРАБОТКА КЛИКА =====
     function handleCellClick(row, col) {
         if (gameOver || isBotThinking) return;
         if (gameMode === 'bot' && currentTurn === 'black') return;
@@ -397,32 +431,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 board[row][col] = moving;
                 board[selected.row][selected.col] = '';
                 currentTurn = currentTurn === 'white' ? 'black' : 'white';
-                const state = checkGameState(currentTurn);
-                const isRu = lang === 'ru';
-                if (state.status === 'mate') {
-                    gameOver = true;
-                    gameStatus.textContent = isRu ?
-                        `Мат! Победили ${state.winner === 'white' ? 'белые' : 'чёрные'}` :
-                        `Checkmate! ${state.winner === 'white' ? 'White' : 'Black'} wins`;
-                } else if (state.status === 'stalemate') {
-                    gameOver = true;
-                    gameStatus.textContent = isRu ? 'Пат! Ничья' : 'Stalemate! Draw';
-                } else {
-                    if (gameMode === 'bot' && currentTurn === 'black') {
-                        gameStatus.textContent = lang === 'ru' ? '🤔 Бот думает...' : '🤔 Bot thinking...';
-                    } else {
-                        updateGameStatus();
-                    }
-                }
+
                 selected = null;
                 possibleMoves = [];
                 updateUI();
                 renderBoard();
+
                 if (gameMode === 'bot' && !gameOver && currentTurn === 'black') {
                     botMove();
                 }
                 return;
             }
+
             if (piece && color === currentTurn) {
                 selected = { row, col };
                 possibleMoves = getSafeMoves(row, col);
@@ -430,6 +450,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 updateUI();
                 return;
             }
+
             selected = null;
             possibleMoves = [];
             renderBoard();
@@ -448,128 +469,117 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // ===== ИНИЦИАЛИЗАЦИЯ =====
     function initBoard() {
-        if (gameMode === 'two') {
-            board = [
-                ['♜', '♞', '♝', '♛', '♚', '♝', '♞', '♜'],
-                ['♟', '♟', '♟', '♟', '♟', '♟', '♟', '♟'],
-                ['', '', '', '', '', '', '', ''],
-                ['', '', '', '', '', '', '', ''],
-                ['', '', '', '', '', '', '', ''],
-                ['', '', '', '', '', '', '', ''],
-                ['♙', '♙', '♙', '♙', '♙', '♙', '♙', '♙'],
-                ['♖', '♘', '♗', '♕', '♔', '♗', '♘', '♖']
-            ];
-        } else {
-            board = [
-                ['♜', '♞', '♝', '♛', '♚', '♝', '♞', '♜'],
-                ['♟', '♟', '♟', '♟', '♟', '♟', '♟', '♟'],
-                ['', '', '', '', '', '', '', ''],
-                ['', '', '', '', '', '', '', ''],
-                ['', '', '', '', '', '', '', ''],
-                ['', '', '', '', '', '', '', ''],
-                ['♙', '♙', '♙', '♙', '♙', '♙', '♙', '♙'],
-                ['♖', '♘', '♗', '♕', '♔', '♗', '♘', '♖']
-            ];
-        }
+        board = [
+            ['♜', '♞', '♝', '♛', '♚', '♝', '♞', '♜'],
+            ['♟', '♟', '♟', '♟', '♟', '♟', '♟', '♟'],
+            ['', '', '', '', '', '', '', ''],
+            ['', '', '', '', '', '', '', ''],
+            ['', '', '', '', '', '', '', ''],
+            ['', '', '', '', '', '', '', ''],
+            ['♙', '♙', '♙', '♙', '♙', '♙', '♙', '♙'],
+            ['♖', '♘', '♗', '♕', '♔', '♗', '♘', '♖']
+        ];
         currentTurn = 'white';
         gameOver = false;
         selected = null;
         possibleMoves = [];
         isBotThinking = false;
-        updateUI();
         renderBoard();
-        updateGameStatus();
+        updateUI();
     }
 
+    // ===== НАСТРОЙКИ =====
     function applyTheme() {
         body.setAttribute("data-theme", theme);
-        if (themeBtn) themeBtn.textContent = theme === "light" ? "🌗" : "🌓";
+        themeBtn.textContent = theme === "light" ? "🌗" : "🌓";
         localStorage.setItem("theme", theme);
     }
 
     function applyAccentColor() {
         body.setAttribute("data-color", accentColor);
         localStorage.setItem("accentColor", accentColor);
-        document.querySelectorAll(".color-dot").forEach(dot => {
-            dot.classList.toggle("active", dot.getAttribute("data-color") === accentColor);
-        });
     }
 
     function applyLang() {
-        const isRu = lang === "ru";
-        if (turnText) turnText.textContent = isRu ? "Ход белых" : "White's turn";
-        if (resetBtn) resetBtn.textContent = isRu ? "↻ Новая игра" : "↻ New Game";
         localStorage.setItem("lang", lang);
+        langBtn.textContent = lang === "ru" ? "🌍" : "🌎";
+        updateUI();
     }
 
-    function applyMode() {
-        modeBot.classList.toggle('active', gameMode === 'bot');
-        modeTwo.classList.toggle('active', gameMode === 'two');
+    function applyMode(mode) {
+        gameMode = mode;
         localStorage.setItem("chessMode", gameMode);
         initBoard();
     }
 
-    if (burgerToggle && controlsMenu) {
-        burgerToggle.addEventListener("click", (e) => {
-            e.stopPropagation();
-            controlsMenu.classList.toggle("open");
-        });
-        document.addEventListener("click", (e) => {
-            if (!controlsMenu.contains(e.target) && e.target !== burgerToggle) {
-                controlsMenu.classList.remove("open");
+    function loadSettings() {
+        theme = localStorage.getItem("theme") || "light";
+        accentColor = localStorage.getItem("accentColor") || "green";
+        lang = localStorage.getItem("lang") || "ru";
+        gameMode = localStorage.getItem("chessMode") || "bot";
+
+        applyTheme();
+        applyAccentColor();
+        applyLang();
+    }
+
+    // ===== КОСТЫЛЬ: ПРИНУДИТЕЛЬНЫЙ ЗАПУСК =====
+    function forceStart() {
+        loadSettings();
+        
+        // Пробуем initBoard сразу
+        initBoard();
+        
+        // Если не помогло — через 100ms ещё раз
+        setTimeout(() => {
+            if (!boardElement || boardElement.children.length === 0) {
+                initBoard();
             }
-        });
-    }
-
-    if (themeBtn) {
-        themeBtn.addEventListener("click", () => {
-            theme = theme === "light" ? "dark" : "light";
-            applyTheme();
-            renderBoard();
-        });
-    }
-
-    if (langBtn) {
-        langBtn.addEventListener("click", () => {
-            lang = lang === "ru" ? "en" : "ru";
-            applyLang();
-            updateUI();
-            updateGameStatus();
-        });
-    }
-
-    if (colorPicker) {
-        colorPicker.addEventListener("click", (e) => {
-            if (e.target.classList.contains("color-dot")) {
-                accentColor = e.target.getAttribute("data-color");
-                applyAccentColor();
+        }, 100);
+        
+        // И ещё через 300ms на всякий случай
+        setTimeout(() => {
+            if (!boardElement || boardElement.children.length === 0) {
+                initBoard();
             }
-        });
+        }, 300);
+        
+        // Самый жёсткий костыль — эмулируем клик по кнопке "Новая игра"
+        setTimeout(() => {
+            if (!boardElement || boardElement.children.length === 0) {
+                if (resetBtn) {
+                    resetBtn.click();
+                }
+            }
+        }, 500);
     }
 
-    if (resetBtn) {
-        resetBtn.addEventListener('click', () => {
-            initBoard();
-            const isRu = lang === 'ru';
-            if (gameStatus) gameStatus.textContent = isRu ? 'Игра продолжается' : 'Game continues';
-        });
-    }
+    // ===== СОБЫТИЯ =====
+    backBtn.addEventListener('click', () => window.location.href = '../../index.html');
 
-    modeBot.addEventListener('click', () => {
-        if (gameMode === 'bot') return;
-        gameMode = 'bot';
-        applyMode();
+    themeBtn.addEventListener('click', () => {
+        theme = theme === "light" ? "dark" : "light";
+        applyTheme();
+        renderBoard();
     });
 
-    modeTwo.addEventListener('click', () => {
-        if (gameMode === 'two') return;
-        gameMode = 'two';
-        applyMode();
+    langBtn.addEventListener('click', () => {
+        lang = lang === "ru" ? "en" : "ru";
+        applyLang();
     });
 
-    applyTheme();
-    applyAccentColor();
-    applyLang();
-    applyMode();
+    resetBtn.addEventListener('click', initBoard);
+
+    modeOptions.forEach(opt => {
+        opt.addEventListener('click', () => {
+            const mode = opt.dataset.mode;
+            if (mode === gameMode) return;
+            applyMode(mode);
+        });
+    });
+
+    // ===== СТАРТ С КОСТЫЛЯМИ =====
+    forceStart();
 });

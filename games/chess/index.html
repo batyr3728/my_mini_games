@@ -1,47 +1,45 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Шахматы</title>
     <link rel="stylesheet" href="style.css">
 </head>
-<body data-theme="light">
-
-    <header class="header">
-        <button class="btn-back" id="backBtn" title="Назад">⬅</button>
-        <div class="header-spacer"></div>
-        <div class="controls-wrapper">
-            <button class="burger-toggle" id="burgerToggle" title="Меню настроек">⋮</button>
-            <div class="controls-menu" id="controlsMenu">
-                <div class="color-picker" id="colorPicker">
-                    <span class="color-dot theme-green" data-color="green"></span>
-                    <span class="color-dot theme-blue" data-color="blue"></span>
-                    <span class="color-dot theme-purple" data-color="purple"></span>
-                    <span class="color-dot theme-orange" data-color="orange"></span>
-                </div>
-                <button id="langBtn" title="Язык">🌍</button>
-                <button id="themeBtn" title="Тема">🌗</button>
-            </div>
+<body data-theme="dark">
+    <header>
+        <button class="back-btn" id="back-btn">⬅️</button>
+        <h1 class="title">Шахматы</h1>
+        <div class="icons">
+            <button class="icon-btn" id="langBtn" aria-label="Сменить язык">🌍</button>
+            <button class="icon-btn" id="themeBtn" aria-label="Сменить тему">🌓</button>
         </div>
     </header>
 
-    <main class="container">
+    <main>
+        <!-- Игровое поле -->
         <div class="game-container">
-            <div class="mode-switcher">
-                <button class="mode-btn active" data-mode="bot" id="modeBot">🤖 С ботом</button>
-                <button class="mode-btn" data-mode="two" id="modeTwo">👥 На двоих</button>
-            </div>
-            <div class="chess-board" id="chessBoard"></div>
-            <div class="game-info">
-                <div class="turn-indicator">
-                    <span id="turnText">Ход белых</span>
-                    <span class="piece" id="turnPiece">♔</span>
+            <div class="board" id="chessBoard"></div>
+        </div>
+
+        <!-- Информация между полем и кнопкой -->
+        <div class="info-bar">
+            <div class="score-box mode-box">
+                <div class="label" id="modeLabel">РЕЖИМ</div>
+                <div class="mode-switcher-text" id="modeSwitcher">
+                    <span class="mode-option active" data-mode="bot" id="modeBotText">С ботом</span>
+                    <span class="mode-divider">|</span>
+                    <span class="mode-option" data-mode="two" id="modeTwoText">На двоих</span>
                 </div>
-                <div class="game-status" id="gameStatus">Игра продолжается</div>
-                <button class="btn-reset" id="resetBtn">↻ Новая игра</button>
+            </div>
+            <div class="score-box turn-box">
+                <div class="label" id="turnLabel">ХОД</div>
+                <div class="value" id="turnDisplay">Белые</div>
             </div>
         </div>
+
+        <!-- Кнопка внизу -->
+        <button class="reset-btn" id="reset-btn">Новая игра</button>
     </main>
 
     <script src="script.js"></script>
